@@ -24,7 +24,6 @@ def player_by_telegram_id(telegram_id: int) -> tuple:
 
         if connection:
             connection.close()
-            print("[INFO] PostgreSQL connection closed")
 
         return player[0]
 

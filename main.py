@@ -24,9 +24,9 @@ def send_reminder(message):
     If you're a collaborator, add your telegram id to 'developers' var in 'config.py'
     """
     if message.from_user.id in config.developers:
-        sm.send_event_reminder()
+        telegram_ids = sm.send_event_reminder()
         bot.send_message(message.from_user.id,
-                         f'<code>Напоминание отправлено всем, кто еще не записался</code>',
+                         f'Напоминание отправлено:<code>\n{telegram_ids}</code>',
                          reply_markup=telebot.types.ReplyKeyboardRemove(),
                          parse_mode='HTML',
                          disable_notification=True)

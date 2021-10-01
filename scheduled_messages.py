@@ -5,7 +5,11 @@ import db_commands as db
 bot = telebot.TeleBot(config.bot_token)
 
 
-def send_event_reminder():
+def send_event_reminder() -> str:
+    """
+    Sends the reminder to players who didn't yet make any decision on the nearest upcoming event
+    :return: Players list in string format: "name lastname\n name lastname\n ... "
+    """
     date = db.upcoming_events()[0][0]
     event_type = db.upcoming_events()[0][1]
     naming = {'train': 'тренировку \U0001F3D0', 'game': 'игру \U0001F3C5'}
@@ -18,6 +22,7 @@ def send_event_reminder():
     btn_02 = telebot.types.InlineKeyboardButton('NO', callback_data=f'NO::{date}')
     keyboard.row(btn_01, btn_02)
 
+    unchecked_players = []
     for telegram_id in telegram_ids:
         if not db.check_attendance(telegram_id, date):
             print(f'[INFO] Sending info to {telegram_id}')
@@ -25,3 +30,8 @@ def send_event_reminder():
                              reply_markup=keyboard,
                              parse_mode='HTML',
                              disable_notification=True)
+            player = db.player_by_telegram_id(telegram_id)
+            player = ' '.join(player)
+            unchecked_players.append(player)
+    unchecked_players = '\n'.join(unchecked_players)
+    return unchecked_players

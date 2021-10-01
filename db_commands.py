@@ -75,7 +75,7 @@ def upcoming_events() -> list:
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""  
-                    select date, type from events where date > current_date order by date ASC
+                    select date, type from events where date >= current_date order by date ASC
                 """)
 
             events = cursor.fetchall()

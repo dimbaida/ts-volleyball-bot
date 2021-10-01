@@ -28,7 +28,7 @@ def send_reminder(message):
     if message.from_user.id in config.developers:
         telegram_ids = sm.send_event_reminder()
         bot.send_message(message.from_user.id,
-                         f'Напоминание отправлено:<code>\n{telegram_ids}</code>',
+                         f'<code>Напоминание отправлено:\n{telegram_ids}</code>',
                          reply_markup=telebot.types.ReplyKeyboardRemove(),
                          parse_mode='HTML',
                          disable_notification=True)

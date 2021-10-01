@@ -33,3 +33,7 @@ def send_event_reminder() -> str:
             unchecked_players.append(player)
     unchecked_players = '\n'.join(unchecked_players)
     return unchecked_players
+
+
+def test():
+    print('1111')

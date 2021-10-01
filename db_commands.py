@@ -226,9 +226,11 @@ def add_decision(telegram_id: int, event_date: str, decision: str):
                     on conflict (player_id, event_id) do update
                         set decision = '{decision}'
                 """)
+        print(f"[PostreSQL INFO]: user {telegram_id} inserted values to 'attendance': {event_date}, {decision}")
 
         if connection:
             connection.close()
 
     except psycopg2.Error as e:
         print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+

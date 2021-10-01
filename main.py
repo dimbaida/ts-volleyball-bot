@@ -115,7 +115,6 @@ def callback_inline(call):
                          f"<code>{player[0]} {player[1]} отметил, что придет {date_str}</code>",
                          parse_mode='HTML',
                          disable_notification=True)
-        print(f"[INFO]: player {player[0]} {player[1]} checked 'YES' for {date_str})")
 
     if command == 'NO':
         date = data
@@ -133,7 +132,6 @@ def callback_inline(call):
                          f"<code>{player[0]} {player[1]} отметил, что пропустит {date_str}</code>",
                          parse_mode='HTML',
                          disable_notification=True)
-        print(f"[INFO]: player {player[0]} {player[1]} checked 'NO' for {date_str})")
 
     if command == 'LIST_PLAYERS':
         date = data

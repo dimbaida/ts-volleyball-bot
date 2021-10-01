@@ -203,6 +203,28 @@ def check_attendance(telegram_id: int, event_date: str) -> str:
         print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
 
 
+def check_admin(telegram_id: int) -> bool:
+    try:
+        connection = psycopg2.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=database)
+        connection.autocommit = True
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""  
+                    select admin from players where telegram_id = {telegram_id};
+                """)
+            result = cursor.fetchall()
+        if connection:
+            connection.close()
+        return result[0][0]
+
+    except psycopg2.Error as e:
+        print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+
+
 def add_decision(telegram_id: int, event_date: str, decision: str):
     """
     :param telegram_id: telegram id (int or string)
@@ -230,11 +252,72 @@ def add_decision(telegram_id: int, event_date: str, decision: str):
                     on conflict (player_id, event_id) do update
                         set decision = '{decision}'
                 """)
-        print(f"[PostreSQL INFO]: user {telegram_id} inserted values to 'attendance': {event_date}, {decision}")
+        print(f"[PostreSQL INFO]: user {telegram_id} inserted values into 'attendance': {event_date}, {decision}")
 
         if connection:
             connection.close()
 
     except psycopg2.Error as e:
         print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+
+
+def create_event(event_date: str, event_type: str, telegram_id: int = None):
+    """
+    :param event_date: date in string format yyyy-mm-dd
+    :param event_type: 'train' or 'game'
+    :param telegram_id: 'None' or int
+    """
+    try:
+        connection = psycopg2.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=database)
+        connection.autocommit = True
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""  
+                    insert into events(date, type)
+                    values('{event_date}', '{event_type}')
+                    on conflict (date) do update
+                        set type = '{event_type}'
+                """)
+        if telegram_id:
+            print(f"[PostreSQL INFO]: user {telegram_id} created an event: {event_date}, {event_type}")
+
+        if connection:
+            connection.close()
+
+    except psycopg2.Error as e:
+        print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+
+
+def delete_event(event_date: str, telegram_id: int = None):
+    """
+    :param event_date: date in string format yyyy-mm-dd
+    :param telegram_id: 'None' or int
+    """
+    try:
+        connection = psycopg2.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=database)
+        connection.autocommit = True
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""  
+                    delete from events * where date = '{event_date}'
+                """)
+        if telegram_id:
+            print(f"[PostreSQL INFO]: user {telegram_id} deleted event: {event_date}")
+
+        if connection:
+            connection.close()
+
+    except psycopg2.Error as e:
+        print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+
 

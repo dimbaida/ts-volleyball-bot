@@ -14,7 +14,7 @@ def test(message):
     If you're a collaborator, add your telegram id to 'developers' var in 'config.py'
     """
     if message.from_user.id in config.developers:
-        pass
+        print(db.check_attendance(381956774, '2021-10-02'))
 
 
 @bot.message_handler(commands=['send_reminder'], chat_types=['private'])
@@ -102,36 +102,76 @@ def callback_inline(call):
     if command == 'YES':
         date = data
         date_str = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%d.%m.%Y")
-        db.add_decision(call.message.chat.id, date, command)
-        bot.delete_message(chat_id=call.message.chat.id,
-                           message_id=call.message.message_id)
-        bot.send_message(call.message.chat.id,
-                         f'<code>Отмечено посещение {date_str}: YES</code>',
-                         reply_markup=telebot.types.ReplyKeyboardRemove(),
-                         parse_mode='HTML',
-                         disable_notification=True)
-        player = db.player_by_telegram_id(call.message.chat.id)
-        bot.send_message(config.ts_bot_group_id,
-                         f"<code>{player[0]} {player[1]} отметил, что придет {date_str}</code>",
-                         parse_mode='HTML',
-                         disable_notification=True)
+        decision = db.check_attendance(call.message.chat.id, date)
+        if decision == 'YES':
+            keyboard = telebot.types.InlineKeyboardMarkup()
+            btn_01 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'EVENT::{date}')
+            btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
+            keyboard.row(btn_01)
+            keyboard.row(btn_02)
+            bot.delete_message(chat_id=call.message.chat.id,
+                               message_id=call.message.message_id)
+            bot.send_message(call.message.chat.id,
+                             f'<code>Ты уже ранее был отмечен на {date_str}: YES</code>',
+                             reply_markup=keyboard,
+                             parse_mode='HTML',
+                             disable_notification=True)
+        else:
+            db.add_decision(call.message.chat.id, date, command)
+            bot.delete_message(chat_id=call.message.chat.id,
+                               message_id=call.message.message_id)
+            keyboard = telebot.types.InlineKeyboardMarkup()
+            btn_01 = telebot.types.InlineKeyboardButton('Вернуться к списку событий', callback_data=f'LIST_EVENTS::')
+            btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
+            keyboard.row(btn_01)
+            keyboard.row(btn_02)
+            bot.send_message(call.message.chat.id,
+                             f'<code>Отмечено посещение {date_str}: YES</code>',
+                             reply_markup=keyboard,
+                             parse_mode='HTML',
+                             disable_notification=True)
+            player = db.player_by_telegram_id(call.message.chat.id)
+            bot.send_message(config.ts_bot_group_id,
+                             f"<code>{player[0]} {player[1]} отметил, что придет {date_str}</code>",
+                             parse_mode='HTML',
+                             disable_notification=True)
 
     if command == 'NO':
         date = data
         date_str = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%d.%m.%Y")
-        db.add_decision(call.message.chat.id, date, command)
-        bot.delete_message(chat_id=call.message.chat.id,
-                           message_id=call.message.message_id)
-        bot.send_message(call.message.chat.id,
-                         f'<code>Отмечено посещение {date_str}: NO</code>',
-                         reply_markup=telebot.types.ReplyKeyboardRemove(),
-                         parse_mode='HTML',
-                         disable_notification=True)
-        player = db.player_by_telegram_id(call.message.chat.id)
-        bot.send_message(config.ts_bot_group_id,
-                         f"<code>{player[0]} {player[1]} отметил, что пропустит {date_str}</code>",
-                         parse_mode='HTML',
-                         disable_notification=True)
+        decision = db.check_attendance(call.message.chat.id, date)
+        if decision == 'NO':
+            keyboard = telebot.types.InlineKeyboardMarkup()
+            btn_01 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'EVENT::{date}')
+            btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
+            keyboard.row(btn_01)
+            keyboard.row(btn_02)
+            bot.delete_message(chat_id=call.message.chat.id,
+                               message_id=call.message.message_id)
+            bot.send_message(call.message.chat.id,
+                             f'<code>Ты уже ранее был отмечен на {date_str}: NO</code>',
+                             reply_markup=keyboard,
+                             parse_mode='HTML',
+                             disable_notification=True)
+        else:
+            db.add_decision(call.message.chat.id, date, command)
+            bot.delete_message(chat_id=call.message.chat.id,
+                               message_id=call.message.message_id)
+            keyboard = telebot.types.InlineKeyboardMarkup()
+            btn_01 = telebot.types.InlineKeyboardButton('Вернуться к списку событий', callback_data=f'LIST_EVENTS::')
+            btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
+            keyboard.row(btn_01)
+            keyboard.row(btn_02)
+            bot.send_message(call.message.chat.id,
+                             f'<code>Отмечено посещение {date_str}: NO</code>',
+                             reply_markup=keyboard,
+                             parse_mode='HTML',
+                             disable_notification=True)
+            player = db.player_by_telegram_id(call.message.chat.id)
+            bot.send_message(config.ts_bot_group_id,
+                             f"<code>{player[0]} {player[1]} отметил, что пропустит {date_str}</code>",
+                             parse_mode='HTML',
+                             disable_notification=True)
 
     if command == 'LIST_PLAYERS':
         date = data

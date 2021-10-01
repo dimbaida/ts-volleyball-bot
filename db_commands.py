@@ -164,12 +164,12 @@ def active_telegram_ids() -> list:
         print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
 
 
-def check_attendance(telegram_id: int, event_date: str) -> bool:
+def check_attendance(telegram_id: int, event_date: str) -> str:
     """
     Checks if the player has already made a decision on going to the event
     :param telegram_id: telegram id
     :param event_date: date in string format yyyy-mm-dd
-    :return: True / False
+    :return: 'YES', 'NO' or '' (empty string)
     """
     try:
         connection = psycopg2.connect(
@@ -193,7 +193,11 @@ def check_attendance(telegram_id: int, event_date: str) -> bool:
         if connection:
             connection.close()
 
-        return True if decision else False
+        try:
+            decision = decision[0][0]
+            return decision
+        except IndexError:
+            return ''
 
     except psycopg2.Error as e:
         print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")

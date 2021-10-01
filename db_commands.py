@@ -123,8 +123,6 @@ def event_players(event_date: str) -> str:
                     players_no += f'\n{str(num_no)}. {player[0]} {player[1]}'
                     num_no += 1
 
-            print("[INFO] Listed the players of the event")
-
         if connection:
             connection.close()
 

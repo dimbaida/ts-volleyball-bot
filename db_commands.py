@@ -111,7 +111,7 @@ class Event:
 
     def players(self) -> dict:
         """
-        :return: {'YES': players, 'NO': players, 'undecided': players}}
+        :return: {'YES': players, 'NO': players}
         """
         try:
             connection = psycopg2.connect(
@@ -163,7 +163,7 @@ class Event:
         except psycopg2.Error as e:
             print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
 
-    def players_attendance_list(self) -> str:
+    def players_formatted(self) -> str:
         try:
             connection = psycopg2.connect(
                 host=host,

@@ -11,8 +11,8 @@ def send_event_reminder():
     print("[INFO] Starting the scheduled event reminder")
     event = db.upcoming_events()[0]
     keyboard = telebot.types.InlineKeyboardMarkup()
-    btn_01 = telebot.types.InlineKeyboardButton('YES', callback_data=f'YES::{event.id}')
-    btn_02 = telebot.types.InlineKeyboardButton('NO', callback_data=f'NO::{event.id}')
+    btn_01 = telebot.types.InlineKeyboardButton('YES', callback_data=f'LIST_EVENTS>>EVENT>>YES::{event.id}')
+    btn_02 = telebot.types.InlineKeyboardButton('NO', callback_data=f'LIST_EVENTS>>EVENT>>NO::{event.id}')
     keyboard.row(btn_01, btn_02)
     players = db.get_active_players()
     bot = telebot.TeleBot(config.bot_token)

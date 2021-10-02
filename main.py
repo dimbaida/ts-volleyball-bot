@@ -1,9 +1,7 @@
 import telebot
 import config
-import datetime
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 from common_constants import ICONS
-# import scheduler
 import db_commands as db
 
 bot = telebot.TeleBot(config.bot_token)
@@ -17,21 +15,6 @@ def test(message):
     """
     if message.from_user.id in config.developers:
         pass
-
-
-# @bot.message_handler(commands=['send_reminder'], chat_types=['private'])
-# def send_reminder(message):
-#     """
-#     Manually send the reminder for upcoming event. Only available for the developers, telegram ids hardcoded
-#     If you're a collaborator, add your telegram id to 'developers' var in 'config.py'
-#     """
-#     if message.from_user.id in config.developers:
-#         telegram_ids = scheduler.send_event_reminder()
-#         bot.send_message(message.from_user.id,
-#                          f'<code>Напоминание отправлено:\n{telegram_ids}</code>',
-#                          reply_markup=telebot.types.ReplyKeyboardRemove(),
-#                          parse_mode='HTML',
-#                          disable_notification=True)
 
 
 @bot.message_handler(commands=['get_id'], chat_types=['private'])
@@ -73,7 +56,7 @@ def callback_inline(call):
             keyboard = telebot.types.InlineKeyboardMarkup()
             for event in db.upcoming_events():
                 btn = telebot.types.InlineKeyboardButton(f"{event.icon}  {event.date_formatted}",
-                                                         callback_data=f'EVENT::{event.id}')
+                                                         callback_data=f'LIST_EVENTS>>EVENT::{event.id}')
                 keyboard.row(btn)
             btn_exit = telebot.types.InlineKeyboardButton(f"Выйти", callback_data=f'EXIT::')
             keyboard.row(btn_exit)
@@ -83,12 +66,12 @@ def callback_inline(call):
                                   parse_mode='HTML',
                                   reply_markup=keyboard)
 
-        if command == 'EVENT':
+        if command == 'LIST_EVENTS>>EVENT':
             event = db.get_event_by_id(data)
             keyboard = telebot.types.InlineKeyboardMarkup()
-            btn_01 = telebot.types.InlineKeyboardButton('YES', callback_data=f'YES::{event.id}')
-            btn_02 = telebot.types.InlineKeyboardButton('NO', callback_data=f'NO::{event.id}')
-            btn_03 = telebot.types.InlineKeyboardButton('Список отметившихся', callback_data=f'LIST_PLAYERS::{event.id}')
+            btn_01 = telebot.types.InlineKeyboardButton('YES', callback_data=f'LIST_EVENTS>>EVENT>>YES::{event.id}')
+            btn_02 = telebot.types.InlineKeyboardButton('NO', callback_data=f'LIST_EVENTS>>EVENT>>NO::{event.id}')
+            btn_03 = telebot.types.InlineKeyboardButton('Список отметившихся', callback_data=f'LIST_EVENTS>>EVENT>>LIST_PLAYERS::{event.id}')
             btn_04 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
             keyboard.row(btn_01, btn_02)
             keyboard.row(btn_03)
@@ -99,12 +82,12 @@ def callback_inline(call):
                                   parse_mode='HTML',
                                   reply_markup=keyboard)
 
-        if command == 'YES':
+        if command == 'LIST_EVENTS>>EVENT>>YES':
             event = db.get_event_by_id(data)
             player = db.get_player_by_telegram_id(call.message.chat.id)
             if player.check_attendance(event.date):
                 keyboard = telebot.types.InlineKeyboardMarkup()
-                btn_01 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'EVENT::{event.id}')
+                btn_01 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS>>EVENT::{event.id}')
                 btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
                 keyboard.row(btn_01)
                 keyboard.row(btn_02)
@@ -131,13 +114,13 @@ def callback_inline(call):
                                  parse_mode='HTML',
                                  disable_notification=True)
 
-        if command == 'NO':
+        if command == 'LIST_EVENTS>>EVENT>>NO':
             event = db.get_event_by_id(data)
             player = db.get_player_by_telegram_id(call.message.chat.id)
             att = player.check_attendance(event.date)
             if not att and att is not None:
                 keyboard = telebot.types.InlineKeyboardMarkup()
-                btn_01 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'EVENT::{data}')
+                btn_01 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS>>EVENT::{data}')
                 btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
                 keyboard.row(btn_01)
                 keyboard.row(btn_02)
@@ -163,12 +146,12 @@ def callback_inline(call):
                                  parse_mode='HTML',
                                  disable_notification=True)
 
-        if command == 'LIST_PLAYERS':
+        if command == 'LIST_EVENTS>>EVENT>>LIST_PLAYERS':
             event = db.get_event_by_id(data)
             keyboard = telebot.types.InlineKeyboardMarkup()
-            btn_01 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'EVENT::{event.id}')
+            btn_01 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS>>EVENT::{event.id}')
             keyboard.row(btn_01)
-            bot.edit_message_text(f'<code>{event.icon}  {event.date_formatted}:\n\n{event.players_attendance_list()}</code>',
+            bot.edit_message_text(f'<code>{event.icon}  {event.date_formatted}:\n\n{event.players_formatted()}</code>',
                                   call.message.chat.id,
                                   call.message.message_id,
                                   parse_mode='HTML',

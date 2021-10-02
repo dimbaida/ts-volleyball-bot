@@ -21,7 +21,7 @@ def send_event_reminder() -> str:
     for player in players:
         if player.check_attendance(event.date) is None:
             print(f'[INFO] Sending reminder to {player.name} {player.lastname}')
-            bot.send_message(381956774, f'<code>Определись с посещением: {event.icon}  {event.date_formatted}</code>',
+            bot.send_message(381956774, f'<code>{player.name} {player.lastname} Определись с посещением: {event.icon}  {event.date_formatted}</code>',
                              reply_markup=keyboard,
                              parse_mode='HTML',
                              disable_notification=True)
@@ -29,4 +29,4 @@ def send_event_reminder() -> str:
     return players_unchecked
 
 
-send_event_reminder()
+# send_event_reminder()

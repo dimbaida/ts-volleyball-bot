@@ -4,7 +4,7 @@ import db_commands as db
 import common_constants as cc
 
 
-def send_event_reminder() -> str:
+def send_event_reminder():
     """
     Sends the reminder to players who didn't yet make any decision on the nearest upcoming event
     :return: Players list in string format: "name lastname\n name lastname\n ... "
@@ -16,17 +16,13 @@ def send_event_reminder() -> str:
     btn_02 = telebot.types.InlineKeyboardButton('NO', callback_data=f'NO::{event.id}')
     keyboard.row(btn_01, btn_02)
     players = db.get_active_players()
-    players_unchecked = ''
+    players_unchecked = '//'
     bot = telebot.TeleBot(config.bot_token)
     for player in players:
         if player.check_attendance(event.date) is None:
             print(f'[INFO] Sending reminder to {player.name} {player.lastname}')
-            bot.send_message(381956774, f'<code>{player.name} {player.lastname} Определись с посещением: {event.icon}  {event.date_formatted}</code>',
+            bot.send_message(381956774, f'<code>Напоминание: {event.icon}  {event.date_formatted}</code>',
                              reply_markup=keyboard,
                              parse_mode='HTML',
                              disable_notification=True)
-            players_unchecked += f"{player.name} {player.lastname}\n"
-    return players_unchecked
-
-
-# send_event_reminder()
+            players_unchecked += f" {player.name} {player.lastname} //"

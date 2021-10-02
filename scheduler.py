@@ -7,7 +7,6 @@ import common_constants as cc
 def send_event_reminder():
     """
     Sends the reminder to players who didn't yet make any decision on the nearest upcoming event
-    :return: Players list in string format: "name lastname\n name lastname\n ... "
     """
     print("[INFO] Starting the scheduled event reminder")
     event = db.upcoming_events()[0]
@@ -16,13 +15,14 @@ def send_event_reminder():
     btn_02 = telebot.types.InlineKeyboardButton('NO', callback_data=f'NO::{event.id}')
     keyboard.row(btn_01, btn_02)
     players = db.get_active_players()
-    players_unchecked = '//'
     bot = telebot.TeleBot(config.bot_token)
     for player in players:
         if player.check_attendance(event.date) is None:
-            print(f'[INFO] Sending reminder to {player.name} {player.lastname}')
-            bot.send_message(381956774, f'<code>Напоминание: {event.icon}  {event.date_formatted}</code>',
+            print(f'[INFO] Sending reminder on {event.date} to {player.name} {player.lastname}')
+            bot.send_message(player.telegram_id,
+                             f'<code>Напоминание: {event.icon}  {event.date_formatted}</code>',
                              reply_markup=keyboard,
                              parse_mode='HTML',
                              disable_notification=True)
-            players_unchecked += f" {player.name} {player.lastname} //"
+            # debug message
+            bot.send_message(381956774, f'[INFO] Reminder on {event.date} sent to: {player.name} {player.lastname}')

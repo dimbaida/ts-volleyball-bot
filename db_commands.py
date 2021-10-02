@@ -44,7 +44,7 @@ class Player:
                     f"""  
                             select decision from attendance 
                             where 
-                                player_id = {self.id})
+                                player_id = {self.id}
                             and 
                                 event_id = (select id from events where date = '{event_date}')
                         """)

@@ -3,7 +3,7 @@ import config
 import datetime
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 from common_constants import ICONS
-import scheduler
+# import scheduler
 import db_commands as db
 
 bot = telebot.TeleBot(config.bot_token)
@@ -19,19 +19,19 @@ def test(message):
         pass
 
 
-@bot.message_handler(commands=['send_reminder'], chat_types=['private'])
-def send_reminder(message):
-    """
-    Manually send the reminder for upcoming event. Only available for the developers, telegram ids hardcoded
-    If you're a collaborator, add your telegram id to 'developers' var in 'config.py'
-    """
-    if message.from_user.id in config.developers:
-        telegram_ids = scheduler.send_event_reminder()
-        bot.send_message(message.from_user.id,
-                         f'<code>Напоминание отправлено:\n{telegram_ids}</code>',
-                         reply_markup=telebot.types.ReplyKeyboardRemove(),
-                         parse_mode='HTML',
-                         disable_notification=True)
+# @bot.message_handler(commands=['send_reminder'], chat_types=['private'])
+# def send_reminder(message):
+#     """
+#     Manually send the reminder for upcoming event. Only available for the developers, telegram ids hardcoded
+#     If you're a collaborator, add your telegram id to 'developers' var in 'config.py'
+#     """
+#     if message.from_user.id in config.developers:
+#         telegram_ids = scheduler.send_event_reminder()
+#         bot.send_message(message.from_user.id,
+#                          f'<code>Напоминание отправлено:\n{telegram_ids}</code>',
+#                          reply_markup=telebot.types.ReplyKeyboardRemove(),
+#                          parse_mode='HTML',
+#                          disable_notification=True)
 
 
 @bot.message_handler(commands=['get_id'], chat_types=['private'])

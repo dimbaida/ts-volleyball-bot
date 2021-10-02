@@ -3,8 +3,6 @@ import config
 import db_commands as db
 import common_constants as cc
 
-bot = telebot.TeleBot(config.bot_token)
-
 
 def send_event_reminder() -> str:
     """
@@ -19,6 +17,7 @@ def send_event_reminder() -> str:
     keyboard.row(btn_01, btn_02)
     players = db.get_active_players()
     players_unchecked = ''
+    bot = telebot.TeleBot(config.bot_token)
     for player in players:
         if player.check_attendance(event.date) is None:
             print(f'[INFO] Sending reminder to {player.name} {player.lastname}')
@@ -28,3 +27,6 @@ def send_event_reminder() -> str:
                              disable_notification=True)
             players_unchecked += f"{player.name} {player.lastname}\n"
     return players_unchecked
+
+
+send_event_reminder()

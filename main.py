@@ -104,13 +104,13 @@ def callback_inline(call):
                 btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
                 keyboard.row(btn_01)
                 keyboard.row(btn_02)
-                bot.edit_message_text(f"<code>Отмечено посещение {ICONS['right_arrow']} {event.icon}  {event.date_formatted}  {ICONS['YES']}</code>",
+                bot.edit_message_text(f"<code>Отмечено посещение {ICONS['right_arrow']} {event.icon}  {event.date_formatted}  {ICONS['yes']}</code>",
                                       call.message.chat.id,
                                       call.message.message_id,
                                       parse_mode='HTML',
                                       reply_markup=keyboard)
                 bot.send_message(config.telegram_group_id,
-                                 f"<code>{player.name} {player.lastname} {ICONS['RIGHT_ARROW']} {event.icon}  {event.date_formatted}  {ICONS['YES']}</code>",
+                                 f"<code>{player.name} {player.lastname} {ICONS['right_arrow']} {event.icon}  {event.date_formatted}  {ICONS['yes']}</code>",
                                  parse_mode='HTML',
                                  disable_notification=True)
 
@@ -124,7 +124,7 @@ def callback_inline(call):
                 btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
                 keyboard.row(btn_01)
                 keyboard.row(btn_02)
-                bot.edit_message_text(f"<code>Ты уже ранее был отмечен на {event.icon}  {event.date_formatted}  {ICONS['NO']}</code>",
+                bot.edit_message_text(f"<code>Ты уже ранее был отмечен на {event.icon}  {event.date_formatted}  {ICONS['no']}</code>",
                                       call.message.chat.id,
                                       call.message.message_id,
                                       parse_mode='HTML',
@@ -136,13 +136,13 @@ def callback_inline(call):
                 btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
                 keyboard.row(btn_01)
                 keyboard.row(btn_02)
-                bot.edit_message_text(f"<code>Отмечено посещение {ICONS['RIGHT_ARROW']} {event.icon}  {event.date_formatted}: {ICONS['NO']}</code>",
+                bot.edit_message_text(f"<code>Отмечено посещение {ICONS['right_arrow']} {event.icon}  {event.date_formatted}: {ICONS['no']}</code>",
                                       call.message.chat.id,
                                       call.message.message_id,
                                       parse_mode='HTML',
                                       reply_markup=keyboard)
                 bot.send_message(config.telegram_group_id,
-                                 f"<code>{player.name} {player.lastname} {ICONS['RIGHT_ARROW']} {event.icon}  {event.date_formatted}  {ICONS['NO']}</code>",
+                                 f"<code>{player.name} {player.lastname} {ICONS['right_arrow']} {event.icon}  {event.date_formatted}  {ICONS['no']}</code>",
                                  parse_mode='HTML',
                                  disable_notification=True)
 

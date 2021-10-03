@@ -22,7 +22,6 @@ def send_event_reminder():
             bot.send_message(player.telegram_id,
                              f'<code>Напоминание: {event.icon}  {event.date_formatted}</code>',
                              reply_markup=keyboard,
-                             parse_mode='HTML',
-                             disable_notification=True)
+                             parse_mode='HTML')
             # debug message
             bot.send_message(381956774, f'[INFO] Reminder on {event.date} sent to: {player.name} {player.lastname}')

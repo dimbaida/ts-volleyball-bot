@@ -24,4 +24,7 @@ def send_event_reminder():
                              reply_markup=keyboard,
                              parse_mode='HTML')
             # debug message
-            bot.send_message(381956774, f'[INFO] Reminder on {event.date} sent to: {player.name} {player.lastname}')
+            bot.send_message(381956774,
+                             f'<code>[INFO] Reminder on {event.date} sent to: {player.name} {player.lastname}</code>',
+                             parse_mode='HTML',
+                             disable_notification=True)

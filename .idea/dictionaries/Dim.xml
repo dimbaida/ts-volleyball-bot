@@ -2,6 +2,7 @@
   <dictionary name="Dim">
     <words>
       <w>birthdate</w>
+      <w>heroku</w>
       <w>lastname</w>
       <w>postgre</w>
     </words>

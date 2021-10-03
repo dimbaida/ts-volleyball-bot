@@ -213,7 +213,8 @@ class Event:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""  
-                        delete from events * where date = '{self.date}'
+                        delete from attendance * where event_id = {self.id};
+                        delete from events * where date = '{self.date}';
                     """)
 
             if connection:

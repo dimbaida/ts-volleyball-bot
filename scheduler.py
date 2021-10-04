@@ -1,7 +1,8 @@
 import telebot
 import config
+import datetime
+from common_constants import ICONS
 import db_commands as db
-import common_constants as cc
 
 
 def send_event_reminder():
@@ -28,3 +29,16 @@ def send_event_reminder():
                              f'<code>[INFO] Reminder on {event.date} sent to: {player.name} {player.lastname}</code>',
                              parse_mode='HTML',
                              disable_notification=True)
+
+
+def check_birthday():
+    players = db.get_all_players()
+    today = datetime.datetime.now()
+    bot = telebot.TeleBot(config.bot_token)
+    for player in players:
+        print(f"[INFO] Comparing {player.name} {player.lastname} {player.birthdate} tp {today}")
+        if player.birthdate.month == today.month and player.birthdate.day == today.day:
+            print("[INFO] Date match. Sending to chat")
+            bot.send_message(config.telegram_group_id,
+                             f"<code>{player.name} {player.lastname} празднует сегодня день рождения! {ICONS['party']}</code>",
+                             parse_mode='HTML')

@@ -15,15 +15,15 @@ class Player:
                  mobile: str,
                  active: bool,
                  admin: bool):
-        self.id = player_id
-        self.name = name
-        self.lastname = lastname
-        self.telegram_id = telegram_id
-        self.birthdate = birthdate.strftime("%Y.%m.%d")
-        self.email = email
-        self.mobile = mobile
-        self.active = active
-        self.admin = admin
+        self.id: int = player_id
+        self.name: str = name
+        self.lastname: str = lastname
+        self.telegram_id: int = telegram_id
+        self.birthdate: datetime.datetime = birthdate
+        self.email: str = email
+        self.mobile: str = mobile
+        self.active: bool = active
+        self.admin: bool = admin
 
     def check_attendance(self, event_date: str) -> bool or None:
         """
@@ -102,12 +102,12 @@ class Event:
                  date: datetime.datetime,
                  event_type: str,
                  note: str):
-        self.id = event_id
-        self.date = date.strftime("%Y.%m.%d")
-        self.date_formatted = date.strftime("%d.%m.%Y")
-        self.type = event_type
-        self.icon = ICONS[event_type]
-        self.note = note
+        self.id: int = event_id
+        self.date: datetime.datetime = date
+        self.date_formatted: str = date.strftime("%d.%m.%Y")
+        self.type: str = event_type
+        self.icon: str = ICONS[event_type]
+        self.note: str = note
 
     def players(self) -> list:
         """
@@ -365,6 +365,36 @@ def get_active_players() -> list:
             cursor.execute(
                 f"""  
                    select * from players where active=true
+               """)
+            players_data = cursor.fetchall()
+            players = []
+            for player in players_data:
+                players.append(Player(player[0], player[1], player[2], player[3],
+                                      player[4], player[5], player[6], player[7], player[8]))
+        if connection:
+            connection.close()
+        return players
+
+    except psycopg2.Error as e:
+        print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+
+
+def get_all_players() -> list:
+    """
+   :return: list of Players
+   """
+    try:
+        connection = psycopg2.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=database)
+        connection.autocommit = True
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""  
+                   select * from players
                """)
             players_data = cursor.fetchall()
             players = []

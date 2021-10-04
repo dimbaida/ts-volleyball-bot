@@ -25,7 +25,7 @@ class Player:
         self.active: bool = active
         self.admin: bool = admin
 
-    def check_attendance(self, event_date: str) -> bool or None:
+    def check_attendance(self, event_date: datetime.datetime) -> bool or None:
         """
             Checks if the player has already made a decision on going to the event
             :param event_date: date in string format yyyy-mm-dd
@@ -62,7 +62,7 @@ class Player:
         except psycopg2.Error as e:
             print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
 
-    def add_decision(self, event_date: str, decision: str) -> None:
+    def add_decision(self, event_date: datetime.datetime, decision: str) -> None:
         """
         :param event_date: date in string format yyyy-mm-dd
         :param decision: 'YES' or 'NO'

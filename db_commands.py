@@ -109,9 +109,9 @@ class Event:
         self.icon = ICONS[event_type]
         self.note = note
 
-    def players(self) -> dict:
+    def players(self) -> list:
         """
-        :return: {'YES': players, 'NO': players}
+        :return: players
         """
         try:
             connection = psycopg2.connect(
@@ -120,46 +120,23 @@ class Event:
                 password=password,
                 database=database)
             connection.autocommit = True
-
             with connection.cursor() as cursor:
-
-                players = {}
-
                 cursor.execute(
                     f"""  
                         select players.* 
                         from attendance
                         join players on players.id = attendance.player_id
                         where attendance.event_id = (select id from events where date = '{self.date}')
-                        and attendance.decision = 'YES'
                         order by id asc
                     """)
                 players_data = cursor.fetchall()
-                players_yes = []
+                players = []
                 for player in players_data:
-                    players_yes.append(Player(player[0], player[1], player[2], player[3], player[4], player[5], player[6], player[7], player[8]))
-                players['YES'] = players_yes
-
-                cursor.execute(
-                    f"""  
-                        select players.* 
-                        from attendance
-                        join players on players.id = attendance.player_id
-                        where attendance.event_id = (select id from events where date = '{self.date}')
-                        and attendance.decision = 'NO'
-                        order by id asc
-                    """)
-                players_data = cursor.fetchall()
-                players_no = []
-                for player in players_data:
-                    players_no.append(Player(player[0], player[1], player[2], player[3], player[4], player[5], player[6], player[7], player[8]))
-                players['NO'] = players_yes
-
+                    players.append(Player(player[0], player[1], player[2], player[3],
+                                          player[4], player[5], player[6], player[7], player[8]))
             if connection:
                 connection.close()
-
             return players
-
         except psycopg2.Error as e:
             print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
 
@@ -187,10 +164,10 @@ class Event:
                 num_no: int = 1
                 for player in players:
                     if player[2] == 'YES':
-                        players_yes += f'\n{str(num_yes)}. {player[0]} {player[1]}'
+                        players_yes += f'\n{num_yes}. {player[0]} {player[1]}'
                         num_yes += 1
                     elif player[2] == 'NO':
-                        players_no += f'\n{str(num_no)}. {player[0]} {player[1]}'
+                        players_no += f'\n{num_no}. {player[0]} {player[1]}'
                         num_no += 1
 
             if connection:
@@ -223,8 +200,28 @@ class Event:
         except psycopg2.Error as e:
             print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
 
-    def is_upcoming(self) -> bool:
-        return datetime.datetime.today() <= datetime.datetime.strptime(self.date, "%Y-%m-%d")
+    def change_type(self):
+        new_type = {'train': 'game', 'game': 'train'}[self.type]
+        try:
+            connection = psycopg2.connect(
+                host=host,
+                user=user,
+                password=password,
+                database=database)
+            connection.autocommit = True
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"""  
+                        update events
+                        set type = '{new_type}'
+                        where id = {self.id}
+                    """)
+            if connection:
+                connection.close()
+        except psycopg2.Error as e:
+            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+        self.type = new_type
+        self.icon = ICONS[self.type]
 
 
 def get_event_by_date(date: str) -> Event:

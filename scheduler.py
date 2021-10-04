@@ -31,7 +31,7 @@ def send_event_reminder():
                              disable_notification=True)
 
 
-def check_birthday():
+def send_birthday_reminder():
     players = db.get_all_players()
     today = datetime.datetime.now()
     bot = telebot.TeleBot(config.bot_token)

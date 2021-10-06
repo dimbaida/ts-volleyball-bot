@@ -27,10 +27,10 @@ class Player:
 
     def check_attendance(self, event_date: datetime.datetime) -> bool or None:
         """
-            Checks if the player has already made a decision on going to the event
-            :param event_date: date in string format yyyy-mm-dd
-            :return: True, False or None
-            """
+        Checks if the player has already made a decision on going to the event
+        :param event_date: date in string format yyyy-mm-dd
+        :return: True, False or None
+        """
         try:
             connection = psycopg2.connect(
                 host=host,
@@ -64,6 +64,7 @@ class Player:
 
     def add_decision(self, event_date: datetime.datetime, decision: str) -> None:
         """
+        Adds the player's decision to the attendance table for the given date
         :param event_date: date in string format yyyy-mm-dd
         :param decision: 'YES' or 'NO'
         """
@@ -111,6 +112,7 @@ class Event:
 
     def players(self) -> list:
         """
+        Returns the list of players that made a decision on the event
         :return: players
         """
         try:
@@ -141,6 +143,10 @@ class Event:
             print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
 
     def players_formatted(self) -> str:
+        """
+        Returns a string with enumerated list of players
+        :return:
+        """
         try:
             connection = psycopg2.connect(
                 host=host,
@@ -179,6 +185,9 @@ class Event:
             print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
 
     def delete(self):
+        """
+        Deletes the event
+        """
         try:
             connection = psycopg2.connect(
                 host=host,
@@ -201,6 +210,9 @@ class Event:
             print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
 
     def change_type(self):
+        """
+        Switch the type of event, e.g. "game" -> "train" or "train" -> "game"
+        """
         new_type = {'train': 'game', 'game': 'train'}[self.type]
         try:
             connection = psycopg2.connect(
@@ -226,6 +238,7 @@ class Event:
 
 def get_event_by_date(date: str) -> Event:
     """
+    Get event by its date
     :param date: date in string format yyyy-mm-dd
     :return: Event
     """
@@ -259,6 +272,7 @@ def get_event_by_date(date: str) -> Event:
 
 def get_event_by_id(event_id: int) -> Event:
     """
+    Get event by its id
     :param event_id: event id
     :return: Event
     """
@@ -292,6 +306,7 @@ def get_event_by_id(event_id: int) -> Event:
 
 def upcoming_events() -> list:
     """
+    Returns a list of upcoming events
     :return: list of Events which will take place after today
     """
     try:
@@ -323,6 +338,7 @@ def upcoming_events() -> list:
 
 def get_player_by_telegram_id(telegram_id: int) -> Player:
     """
+    Get the player by his/her telegram id
     :param telegram_id: telegram id
     :return: Player
     """
@@ -351,8 +367,9 @@ def get_player_by_telegram_id(telegram_id: int) -> Player:
 
 def get_active_players() -> list:
     """
-   :return: list of Players
-   """
+    Get the list of all active players
+    :return: list of Players
+    """
     try:
         connection = psycopg2.connect(
             host=host,
@@ -381,8 +398,9 @@ def get_active_players() -> list:
 
 def get_all_players() -> list:
     """
-   :return: list of Players
-   """
+    Get the list of all players
+    :return: list of Players
+    """
     try:
         connection = psycopg2.connect(
             host=host,
@@ -411,8 +429,10 @@ def get_all_players() -> list:
 
 def create_event(event_date: str, event_type: str) -> Event:
     """
+    Creates a new event
     :param event_date: date in string format yyyy-mm-dd
     :param event_type: 'train' or 'game'
+    :return: Event
     """
     try:
         connection = psycopg2.connect(

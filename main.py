@@ -1,7 +1,7 @@
 import telebot
 import config
 import inline_calendar
-import datetime
+from datetime import datetime
 from common_constants import ICONS
 import db_commands as db
 
@@ -256,7 +256,7 @@ def callback_inline(call):
     if command == 'MANAGE>>CREATE>>MONTH>>DAY>>DATE':
         date = data
         year, month, day = date.split('-')
-        if day.isdigit() and datetime.datetime.strptime(date, '%Y-%m-%d') >= datetime.datetime.today():
+        if day.isdigit() and datetime.strptime(date, '%Y-%m-%d') >= datetime.today():
             keyboard = telebot.types.InlineKeyboardMarkup()
             btn_01 = telebot.types.InlineKeyboardButton('Тренировка', callback_data=f'MANAGE>>CREATE>>MONTH>>DAY>>DATE>>CREATE::{date}:train')
             btn_02 = telebot.types.InlineKeyboardButton('Игра', callback_data=f'MANAGE>>CREATE>>MONTH>>DAY>>DATE>>CREATE::{date}:game')

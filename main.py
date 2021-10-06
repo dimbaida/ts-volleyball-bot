@@ -1,6 +1,7 @@
 import telebot
 import config
 import inline_calendar
+import datetime
 from common_constants import ICONS
 import db_commands as db
 
@@ -255,11 +256,11 @@ def callback_inline(call):
     if command == 'MANAGE>>CREATE>>MONTH>>DAY>>DATE':
         date = data
         year, month, day = date.split('-')
-        if day.isdigit():
+        if day.isdigit() and datetime.datetime.strptime(date, '%Y-%m-%d') >= datetime.datetime.today():
             keyboard = telebot.types.InlineKeyboardMarkup()
             btn_01 = telebot.types.InlineKeyboardButton('Тренировка', callback_data=f'MANAGE>>CREATE>>MONTH>>DAY>>DATE>>CREATE::{date}:train')
             btn_02 = telebot.types.InlineKeyboardButton('Игра', callback_data=f'MANAGE>>CREATE>>MONTH>>DAY>>DATE>>CREATE::{date}:game')
-            btn_back = telebot.types.InlineKeyboardButton('Назад', callback_data=f"{'>>'.join(command.split('>>')[:-1])}::{year}-{month}")
+            btn_back = telebot.types.InlineKeyboardButton('Назад', callback_data="MANAGE::")
             keyboard.row(btn_01, btn_02)
             keyboard.row(btn_back)
             bot.edit_message_text(f'<code>Выбери тип события:</code>',
@@ -269,7 +270,7 @@ def callback_inline(call):
                                   reply_markup=keyboard)
         else:
             keyboard = telebot.types.InlineKeyboardMarkup()
-            btn_back = telebot.types.InlineKeyboardButton('Назад', callback_data=f"{'>>'.join(command.split('>>')[:-1])}::{year}-{month}")
+            btn_back = telebot.types.InlineKeyboardButton('Назад', callback_data="MANAGE::")
             keyboard.add(btn_back)
             bot.edit_message_text(f'<code>Неправильная дата</code>',
                                   call.message.chat.id,

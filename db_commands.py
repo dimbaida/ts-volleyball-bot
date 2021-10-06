@@ -170,10 +170,10 @@ class Event:
                 num_no: int = 1
                 for player in players:
                     if player[2] == 'YES':
-                        players_yes += f'\n{num_yes}. {player[0]} {player[1]}'
+                        players_yes += f'\n{num_yes}. {player[1]} {player[0]}'
                         num_yes += 1
                     elif player[2] == 'NO':
-                        players_no += f'\n{num_no}. {player[0]} {player[1]}'
+                        players_no += f'\n{num_no}. {player[1]} {player[0]}'
                         num_no += 1
 
             if connection:
@@ -306,7 +306,7 @@ def get_event_by_id(event_id: int) -> Event:
 
 def upcoming_events() -> list:
     """
-    Returns a list of upcoming events
+    Get the list of upcoming events
     :return: list of Events which will take place after today
     """
     try:

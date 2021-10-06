@@ -92,7 +92,7 @@ def callback_inline(call):
             btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
             keyboard.row(btn_01)
             keyboard.row(btn_02)
-            bot.edit_message_text(f"<code>Ты уже ранее был отмечен на {event.icon}  {event.date_formatted}  {ICONS['yes']}</code>",
+            bot.edit_message_text(f"<code>Ты уже ранее был отмечен на {event.icon} {event.date_formatted} {ICONS['yes']}</code>",
                                   call.message.chat.id,
                                   call.message.message_id,
                                   parse_mode='HTML',
@@ -105,13 +105,13 @@ def callback_inline(call):
             btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
             keyboard.row(btn_01)
             keyboard.row(btn_02)
-            bot.edit_message_text(f"<code>Отмечено посещение {ICONS['right_arrow']} {event.icon}  {event.date_formatted}  {ICONS['yes']}</code>",
+            bot.edit_message_text(f"<code>Отмечено посещение {ICONS['right_arrow']} {event.icon} {event.date_formatted} {ICONS['yes']}</code>",
                                   call.message.chat.id,
                                   call.message.message_id,
                                   parse_mode='HTML',
                                   reply_markup=keyboard)
             bot.send_message(config.telegram_group_id,
-                             f"<code>{player.name} {player.lastname} {ICONS['right_arrow']} {event.icon}  {event.date_formatted}  {ICONS['yes']}</code>",
+                             f"<code>{player.lastname} {player.name} {ICONS['right_arrow']} {event.icon} {event.date_formatted} {ICONS['yes']}</code>",
                              parse_mode='HTML',
                              disable_notification=True)
 
@@ -124,7 +124,7 @@ def callback_inline(call):
             btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
             keyboard.row(btn_01)
             keyboard.row(btn_02)
-            bot.edit_message_text(f"<code>Ты уже ранее был отмечен на {event.icon}  {event.date_formatted}  {ICONS['no']}</code>",
+            bot.edit_message_text(f"<code>Ты уже ранее был отмечен на {event.icon} {event.date_formatted} {ICONS['no']}</code>",
                                   call.message.chat.id,
                                   call.message.message_id,
                                   parse_mode='HTML',
@@ -136,13 +136,13 @@ def callback_inline(call):
             btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
             keyboard.row(btn_01)
             keyboard.row(btn_02)
-            bot.edit_message_text(f"<code>Отмечено посещение {ICONS['right_arrow']} {event.icon}  {event.date_formatted}: {ICONS['no']}</code>",
+            bot.edit_message_text(f"<code>Отмечено посещение {ICONS['right_arrow']} {event.icon} {event.date_formatted} {ICONS['no']}</code>",
                                   call.message.chat.id,
                                   call.message.message_id,
                                   parse_mode='HTML',
                                   reply_markup=keyboard)
             bot.send_message(config.telegram_group_id,
-                             f"<code>{player.name} {player.lastname} {ICONS['right_arrow']} {event.icon}  {event.date_formatted}  {ICONS['no']}</code>",
+                             f"<code>{player.lastname} {player.name} {ICONS['right_arrow']} {event.icon} {event.date_formatted} {ICONS['no']}</code>",
                              parse_mode='HTML',
                              disable_notification=True)
 
@@ -151,7 +151,7 @@ def callback_inline(call):
         keyboard = telebot.types.InlineKeyboardMarkup()
         btn_01 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS>>EVENT::{event.id}')
         keyboard.row(btn_01)
-        bot.edit_message_text(f'<code>{event.icon}  {event.date_formatted}:\n\n{event.players_formatted()}</code>',
+        bot.edit_message_text(f'<code>{event.icon} {event.date_formatted}:\n\n{event.players_formatted()}</code>',
                               call.message.chat.id,
                               call.message.message_id,
                               parse_mode='HTML',
@@ -162,7 +162,7 @@ def callback_inline(call):
     if command == 'MANAGE':
         keyboard = telebot.types.InlineKeyboardMarkup()
         for event in db.upcoming_events():
-            btn = telebot.types.InlineKeyboardButton(f"Изменить {event.icon}  {event.date_formatted}", callback_data=f'MANAGE>>EVENT::{event.id}')
+            btn = telebot.types.InlineKeyboardButton(f"Изменить {event.icon} {event.date_formatted}", callback_data=f'MANAGE>>EVENT::{event.id}')
             keyboard.row(btn)
         btn_new = telebot.types.InlineKeyboardButton(f"Создать", callback_data=f'MANAGE>>CREATE::')
         btn_exit = telebot.types.InlineKeyboardButton(f"Выйти", callback_data=f'EXIT::')
@@ -183,7 +183,7 @@ def callback_inline(call):
         keyboard.row(btn_01)
         keyboard.row(btn_02)
         keyboard.row(btn_03)
-        bot.edit_message_text(f'<code>{event.icon}  {event.date_formatted}</code>',
+        bot.edit_message_text(f'<code>{event.icon} {event.date_formatted}</code>',
                               call.message.chat.id,
                               call.message.message_id,
                               parse_mode='HTML',
@@ -196,7 +196,7 @@ def callback_inline(call):
                                                     callback_data=f'MANAGE>>EVENT>>DELETE>>CONFIRMED::{event.id}')
         btn_02 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'MANAGE>>EVENT::{event.id}')
         keyboard.row(btn_01, btn_02)
-        bot.edit_message_text(f'<code>УВЕРЕН? Все данные о событии будут стерты! {event.icon}  {event.date_formatted}</code>',
+        bot.edit_message_text(f'<code>УВЕРЕН? Все данные о событии будут стерты! {event.icon} {event.date_formatted}</code>',
                               call.message.chat.id,
                               call.message.message_id,
                               parse_mode='HTML',
@@ -209,7 +209,7 @@ def callback_inline(call):
         keyboard = telebot.types.InlineKeyboardMarkup()
         btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'MANAGE>>EVENT::{event.id}')
         keyboard.row(btn)
-        bot.edit_message_text(f"<code>Тип события изменен {old_icon} {ICONS['right_arrow']} {event.icon}  {event.date_formatted}</code>",
+        bot.edit_message_text(f"<code>Тип события изменен {old_icon} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
                               call.message.chat.id,
                               call.message.message_id,
                               parse_mode='HTML',
@@ -223,8 +223,8 @@ def callback_inline(call):
         keyboard.row(btn_01)
         keyboard.row(btn_02)
         event.delete()
-        print(f'[INFO] Event {event.date} was deleted by {player.name} {player.lastname}')
-        bot.edit_message_text(f'<code>Событие {event.icon}  {event.date_formatted} удалено</code>',
+        print(f'[INFO] Event {event.date} was deleted by {player.lastname} {player.name}')
+        bot.edit_message_text(f'<code>Событие {event.icon} {event.date_formatted} удалено</code>',
                               call.message.chat.id,
                               call.message.message_id,
                               parse_mode='HTML',
@@ -286,8 +286,8 @@ def callback_inline(call):
         keyboard.row(btn_01)
         keyboard.row(btn_02)
         event = db.create_event(date, event_type)
-        print(f'[INFO] Event {event.date} was created by {player.name} {player.lastname}')
-        bot.edit_message_text(f'<code>Событие создано: {event.icon}  {event.date_formatted}</code>',
+        print(f'[INFO] Event {event.date} was created by {player.lastname} {player.name}')
+        bot.edit_message_text(f'<code>Событие создано: {event.icon} {event.date_formatted}</code>',
                               call.message.chat.id,
                               call.message.message_id,
                               parse_mode='HTML',

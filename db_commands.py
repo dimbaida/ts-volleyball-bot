@@ -79,11 +79,12 @@ class Player:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""  
-                        insert into attendance(player_id, event_id, decision)
+                        insert into attendance(player_id, event_id, decision, timestamp)
                             values(
                                 (select id from players where telegram_id = {self.telegram_id}),
                                 (select id from events where date = '{event_date}'),
-                                '{decision}'
+                                '{decision}',
+                                CURRENT_TIMESTAMP
                             )
                         on conflict (player_id, event_id) do update
                             set decision = '{decision}'
@@ -129,7 +130,7 @@ class Event:
                         from attendance
                         join players on players.id = attendance.player_id
                         where attendance.event_id = (select id from events where date = '{self.date}')
-                        order by id asc
+                        order by attendance.timestamp asc
                     """)
                 players_data = cursor.fetchall()
                 players = []
@@ -162,6 +163,7 @@ class Event:
                     from attendance
                     join players on players.id = attendance.player_id
                     where attendance.event_id = (select id from events where date = '{self.date}')
+                    order by attendance.timestamp asc
                     """)
                 players = cursor.fetchall()
                 players_yes: str = ''

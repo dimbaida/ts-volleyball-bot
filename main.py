@@ -99,7 +99,7 @@ def callback_inline(call):
                                   reply_markup=keyboard)
 
         else:
-            player.add_decision(event.date, 'YES')
+            player.set_decision(event.date, True)
             keyboard = telebot.types.InlineKeyboardMarkup()
             btn_01 = telebot.types.InlineKeyboardButton('Вернуться к списку событий', callback_data=f'LIST_EVENTS::')
             btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
@@ -130,7 +130,7 @@ def callback_inline(call):
                                   parse_mode='HTML',
                                   reply_markup=keyboard)
         else:
-            player.add_decision(event.date, 'NO')
+            player.set_decision(event.date, False)
             keyboard = telebot.types.InlineKeyboardMarkup()
             btn_01 = telebot.types.InlineKeyboardButton('Вернуться к списку событий', callback_data=f'LIST_EVENTS::')
             btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')

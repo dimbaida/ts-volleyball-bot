@@ -42,7 +42,7 @@ class Player:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""  
-                            select decision from attendance 
+                            select decision from attendance
                             where 
                                 player_id = {self.id}
                             and 
@@ -54,15 +54,14 @@ class Player:
                 connection.close()
 
             try:
-                decision = decision[0][0]
-                return True if decision == 'YES' else False
+                return decision[0][0]
             except IndexError:
                 return None
 
         except psycopg2.Error as e:
             print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
 
-    def add_decision(self, event_date: datetime.datetime, decision: str) -> None:
+    def set_decision(self, event_date: datetime.datetime, decision: bool) -> None:
         """
         Adds the player's decision to the attendance table for the given date
         :param event_date: date in string format yyyy-mm-dd
@@ -78,16 +77,16 @@ class Player:
 
             with connection.cursor() as cursor:
                 cursor.execute(
-                    f"""  
+                    f"""
                         insert into attendance(player_id, event_id, decision, timestamp)
                             values(
                                 (select id from players where telegram_id = {self.telegram_id}),
                                 (select id from events where date = '{event_date}'),
-                                '{decision}',
+                                {decision},
                                 CURRENT_TIMESTAMP
                             )
                         on conflict (player_id, event_id) do update
-                            set decision = '{decision}'
+                            set decision = {decision}, timestamp = CURRENT_TIMESTAMP
                     """)
             print(f"[PostgreSQL INFO]: {self.name} {self.lastname} inserted values into 'attendance': {event_date}, {decision}")
 
@@ -173,10 +172,10 @@ class Event:
                 num_no: int = 1
                 num_none: int = 1
                 for player in players:
-                    if player[2] == 'YES':
+                    if player[2] == True:
                         players_yes += f'\n{num_yes}. {player[1]} {player[0]}'
                         num_yes += 1
-                    elif player[2] == 'NO':
+                    elif player[2] == False:
                         players_no += f'\n{num_no}. {player[1]} {player[0]}'
                         num_no += 1
                     elif player[2] is None:

@@ -159,17 +159,19 @@ class Event:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""
-                    select players.name, players.lastname, attendance.decision
-                    from attendance
-                    join players on players.id = attendance.player_id
-                    where attendance.event_id = (select id from events where date = '{self.date}')
-                    order by attendance.timestamp asc
+                    select  p.name, p.lastname, a.decision from players p
+                    left join attendance a on p.id = a.player_id 
+                        and a.event_id = (select e.id from events e where e.date = '{self.date}')
+                    where p.active
+                    order by a.timestamp asc
                     """)
                 players = cursor.fetchall()
                 players_yes: str = ''
                 players_no: str = ''
+                players_none: str = ''
                 num_yes: int = 1
                 num_no: int = 1
+                num_none: int = 1
                 for player in players:
                     if player[2] == 'YES':
                         players_yes += f'\n{num_yes}. {player[1]} {player[0]}'
@@ -177,11 +179,14 @@ class Event:
                     elif player[2] == 'NO':
                         players_no += f'\n{num_no}. {player[1]} {player[0]}'
                         num_no += 1
+                    elif player[2] is None:
+                        players_none += f'\n{num_none}. {player[1]} {player[0]}'
+                        num_none += 1
 
             if connection:
                 connection.close()
 
-            return f'Придут:{players_yes}\n\nПропустят:{players_no}'
+            return f'Придут:{players_yes}\n\nПропустят:{players_no}\n\nНе отметились:{players_none}'
 
         except psycopg2.Error as e:
             print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")

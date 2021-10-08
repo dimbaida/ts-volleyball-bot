@@ -96,6 +96,82 @@ class Player:
         except psycopg2.Error as e:
             print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
 
+    def write_cache(self, cache: str) -> None:
+        """
+        Writes cache to the players table
+        :param cache: Cache
+        """
+        try:
+            connection = psycopg2.connect(
+                host=host,
+                user=user,
+                password=password,
+                database=database)
+            connection.autocommit = True
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"""
+                       update players set cache = '{cache}'
+                       where id = {self.id}
+                    """)
+            if connection:
+                connection.close()
+        except psycopg2.Error as e:
+            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+
+    def read_cache(self) -> str:
+        """
+        Reads cache from the players table
+        :return: Cache
+        """
+        try:
+            connection = psycopg2.connect(
+                host=host,
+                user=user,
+                password=password,
+                database=database)
+            connection.autocommit = True
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"""
+                        select cache from players
+                        where id = {self.id};
+                    """)
+                cache = cursor.fetchall()
+            if connection:
+                connection.close()
+            return cache[0][0]
+
+        except psycopg2.Error as e:
+            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+
+    def purge_cache(self) -> None:
+        """
+        Purges cache from the players table
+        """
+        try:
+            connection = psycopg2.connect(
+                host=host,
+                user=user,
+                password=password,
+                database=database)
+            connection.autocommit = True
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"""
+                        update players
+                        set cache = null
+                        where id = {self.id};
+                    """)
+            if connection:
+                connection.close()
+
+        except psycopg2.Error as e:
+            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+
 
 class Event:
     def __init__(self,
@@ -125,7 +201,16 @@ class Event:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""  
-                        select players.* 
+                        select  players.id,
+                                players.name, 
+                                players.lastname,
+                                players.telegram_id,
+                                players.birthdate,
+                                players.email,
+                                players.mobile,
+                                players.active,
+                                players.admin,
+                                players.cache
                         from attendance
                         join players on players.id = attendance.player_id
                         where attendance.event_id = (select id from events where date = '{self.date}')
@@ -134,8 +219,15 @@ class Event:
                 players_data = cursor.fetchall()
                 players = []
                 for player in players_data:
-                    players.append(Player(player[0], player[1], player[2], player[3],
-                                          player[4], player[5], player[6], player[7], player[8]))
+                    players.append(Player(player_id=player[0],
+                                          name=player[1],
+                                          lastname=player[2],
+                                          telegram_id=player[3],
+                                          birthdate=player[4],
+                                          email=player[5],
+                                          mobile=player[6],
+                                          active=player[7],
+                                          admin=player[8]))
             if connection:
                 connection.close()
             return players
@@ -158,17 +250,31 @@ class Event:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""
-                    select  p.name, p.lastname, a.decision from players p
-                    left join attendance a on p.id = a.player_id 
-                        and a.event_id = (select e.id from events e where e.date = '{self.date}')
-                    where p.active
-                    order by a.timestamp asc
+                        select  p.name, p.lastname, a.decision from players p
+                        left join attendance a on p.id = a.player_id 
+                            and a.event_id = (select e.id from events e where e.date = '{self.date}')
+                        where p.active
+                        order by a.timestamp asc
                     """)
                 players = cursor.fetchall()
+
+                cursor.execute(
+                    f"""
+                        select name from guests
+                        where event_id = {self.id}
+                        order by timestamp asc
+                    """)
+                guests = cursor.fetchall()
+
+                if connection:
+                    connection.close()
+
                 players_yes: str = ''
+                guests_str: str = ''
                 players_no: str = ''
                 players_none: str = ''
                 num_yes: int = 1
+                num_guests: int = 1
                 num_no: int = 1
                 num_none: int = 1
                 for player in players:
@@ -181,12 +287,17 @@ class Event:
                     elif player[2] is None:
                         players_none += f'\n{num_none}. {player[1]} {player[0]}'
                         num_none += 1
+                for guest in guests:
+                    guests_str += f'\n{num_guests}. {guest[0]}'
+                    num_guests += 1
+
             text = ''
-            if connection:
-                connection.close()
             if players_yes:
                 text += "Придут:"
                 text += players_yes
+            if guests:
+                text += "\n\nГости:"
+                text += guests_str
             if players_no:
                 text += '\n\nПропустят:'
                 text += players_no
@@ -225,7 +336,7 @@ class Event:
         except psycopg2.Error as e:
             print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
 
-    def change_type(self):
+    def switch_type(self):
         """
         Switch the type of event, e.g. "game" -> "train" or "train" -> "game"
         """
@@ -251,6 +362,65 @@ class Event:
         self.type = new_type
         self.icon = ICONS[self.type]
 
+    def add_guest(self, guest_name: str, player: Player) -> None:
+        """
+        Adds name to the 'guests' table
+        :param guest_name: guest name
+        :param player: player who added the guest
+        """
+        try:
+            connection = psycopg2.connect(
+                host=host,
+                user=user,
+                password=password,
+                database=database)
+            connection.autocommit = True
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"""
+                        insert into guests(event_id, name, added_by, timestamp)
+                        values({self.id}, '{guest_name}', {player.id}, CURRENT_TIMESTAMP)
+                    """)
+            print(f"[PostgreSQL INFO]: Guest {guest_name} was added to {self.date} by {player.lastname} {player.name}")
+
+            if connection:
+                connection.close()
+
+        except psycopg2.Error as e:
+            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+
+    def update_note(self, note: str, player: Player) -> None:
+        """
+        Updates the note for the event
+        :param note: Text for the note
+        :param player: Player who added the note
+        :return:
+        """
+        try:
+            connection = psycopg2.connect(
+                host=host,
+                user=user,
+                password=password,
+                database=database)
+            connection.autocommit = True
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"""
+                        update events
+                        set note = '{note}'
+                        where id = {self.id}
+                    """)
+            print(f"[PostgreSQL INFO]: Note was added to {self.date} by {player.name} {player.lastname}")
+
+            if connection:
+                connection.close()
+            self.note = note
+
+        except psycopg2.Error as e:
+            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+
 
 def get_event_by_date(date: str) -> Event:
     """
@@ -275,7 +445,7 @@ def get_event_by_date(date: str) -> Event:
             event_id = event[0][0]
             event_date = event[0][1]
             event_type = event[0][2]
-            event_note = event[0][2]
+            event_note = event[0][3]
 
         if connection:
             connection.close()
@@ -309,7 +479,7 @@ def get_event_by_id(event_id: int) -> Event:
             event_id = event[0][0]
             event_date = event[0][1]
             event_type = event[0][2]
-            event_note = event[0][2]
+            event_note = event[0][3]
 
         if connection:
             connection.close()
@@ -369,13 +539,30 @@ def get_player_by_telegram_id(telegram_id: int) -> Player:
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""  
-                    select * from players where telegram_id={telegram_id}
+                    select  players.id,
+                            players.name, 
+                            players.lastname,
+                            players.telegram_id,
+                            players.birthdate,
+                            players.email,
+                            players.mobile,
+                            players.active,
+                            players.admin
+                    from players where telegram_id={telegram_id}
                 """)
             player = cursor.fetchall()
             player = player[0]
         if connection:
             connection.close()
-        return Player(player[0], player[1], player[2], player[3], player[4], player[5], player[6], player[7], player[8])
+        return Player(player_id=player[0],
+                      name=player[1],
+                      lastname=player[2],
+                      telegram_id=player[3],
+                      birthdate=player[4],
+                      email=player[5],
+                      mobile=player[6],
+                      active=player[7],
+                      admin=player[8])
 
     except psycopg2.Error as e:
         print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
@@ -397,13 +584,29 @@ def get_active_players() -> list:
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""  
-                   select * from players where active=true
-               """)
+                select  players.id,
+                        players.name, 
+                        players.lastname,
+                        players.telegram_id,
+                        players.birthdate,
+                        players.email,
+                        players.mobile,
+                        players.active,
+                        players.admin
+                from players where active=true
+                """)
             players_data = cursor.fetchall()
             players = []
             for player in players_data:
-                players.append(Player(player[0], player[1], player[2], player[3],
-                                      player[4], player[5], player[6], player[7], player[8]))
+                players.append(Player(player_id=player[0],
+                                      name=player[1],
+                                      lastname=player[2],
+                                      telegram_id=player[3],
+                                      birthdate=player[4],
+                                      email=player[5],
+                                      mobile=player[6],
+                                      active=player[7],
+                                      admin=player[8]))
         if connection:
             connection.close()
         return players
@@ -428,13 +631,29 @@ def get_all_players() -> list:
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""  
-                   select * from players
-               """)
+                select  players.id,
+                        players.name, 
+                        players.lastname,
+                        players.telegram_id,
+                        players.birthdate,
+                        players.email,
+                        players.mobile,
+                        players.active,
+                        players.admin
+                from players
+                """)
             players_data = cursor.fetchall()
             players = []
             for player in players_data:
-                players.append(Player(player[0], player[1], player[2], player[3],
-                                      player[4], player[5], player[6], player[7], player[8]))
+                players.append(Player(player_id=player[0],
+                                      name=player[1],
+                                      lastname=player[2],
+                                      telegram_id=player[3],
+                                      birthdate=player[4],
+                                      email=player[5],
+                                      mobile=player[6],
+                                      active=player[7],
+                                      admin=player[8]))
         if connection:
             connection.close()
         return players
@@ -466,7 +685,7 @@ def create_event(event_date: str, event_type: str) -> Event:
                     on conflict (date) do update
                         set type = '{event_type}';
 
-                    select * from events 
+                    select id, date, type, note from events 
                     where date = '{event_date}';
                 """)
             event = cursor.fetchall()

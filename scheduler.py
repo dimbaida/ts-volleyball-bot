@@ -20,8 +20,11 @@ def send_event_reminder():
     for player in players:
         if player.check_attendance(event.date) is None:
             print(f'[INFO] Sending reminder on {event.date} to {player.name} {player.lastname}')
+            event_text = f"Напоминание: {event.icon} {event.date_formatted}"
+            if event.note:
+                event_text += f"\n{event.note}"
             bot.send_message(player.telegram_id,
-                             f'<code>Напоминание: {event.icon}  {event.date_formatted}</code>',
+                             f'<code>{event_text}</code>',
                              reply_markup=keyboard,
                              parse_mode='HTML')
             # debug message

@@ -21,6 +21,12 @@ def keyboard_years(command: str) -> types.InlineKeyboardMarkup():
 
 
 def keyboard_months(command: str, year:str) -> types.InlineKeyboardMarkup():
+    """
+    Assemble a keyboard with 12 months
+    :param command: the string command for callback_data
+    :param year: year
+    :return: Keyboard with 12 months
+    """
     keyboard = types.InlineKeyboardMarkup()
     btn_jan = types.InlineKeyboardButton('JAN', callback_data=f"{command}>>DAY::{year}-1")
     btn_feb = types.InlineKeyboardButton('FEB', callback_data=f"{command}>>DAY::{year}-2")
@@ -42,7 +48,14 @@ def keyboard_months(command: str, year:str) -> types.InlineKeyboardMarkup():
     return keyboard
 
 
-def keyboard_days(command, year, month):
+def keyboard_days(command, year, month) -> types.InlineKeyboardMarkup():
+    """
+    Assemble a keyboard with the list of days for the given month
+    :param command: the string command for callback_data
+    :param year: year
+    :param month: month
+    :return:  Keyboard with 12 the list of days for the given month
+    """
     num_days = calendar.monthrange(int(year), int(month))[1]
     days = list(range(1, num_days + 1))
     for i in range(32 - len(days)):
@@ -52,6 +65,4 @@ def keyboard_days(command, year, month):
     keyboard = days_btns.keyboard
     # keyboard.row(btn_back)
     return keyboard
-
-
 

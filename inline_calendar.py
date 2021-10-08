@@ -22,18 +22,18 @@ def keyboard_years(command: str) -> types.InlineKeyboardMarkup():
 
 def keyboard_months(command: str, year:str) -> types.InlineKeyboardMarkup():
     keyboard = types.InlineKeyboardMarkup()
-    btn_jan = Button(button_data=("JAN", 1),  front_marker=f"{command}>>DAY::{year}-").button
-    btn_feb = Button(button_data=("FEB", 2),  front_marker=f"{command}>>DAY::{year}-").button
-    btn_mar = Button(button_data=("MAR", 3),  front_marker=f"{command}>>DAY::{year}-").button
-    btn_apr = Button(button_data=("APR", 4),  front_marker=f"{command}>>DAY::{year}-").button
-    btn_may = Button(button_data=("MAY", 5),  front_marker=f"{command}>>DAY::{year}-").button
-    btn_jun = Button(button_data=("JUN", 6),  front_marker=f"{command}>>DAY::{year}-").button
-    btn_jul = Button(button_data=("JUL", 7),  front_marker=f"{command}>>DAY::{year}-").button
-    btn_aug = Button(button_data=("AUG", 8),  front_marker=f"{command}>>DAY::{year}-").button
-    btn_sep = Button(button_data=("SEP", 9),  front_marker=f"{command}>>DAY::{year}-").button
-    btn_oct = Button(button_data=("OCT", 10), front_marker=f"{command}>>DAY::{year}-").button
-    btn_nov = Button(button_data=("NOV", 11), front_marker=f"{command}>>DAY::{year}-").button
-    btn_dec = Button(button_data=("DEC", 12), front_marker=f"{command}>>DAY::{year}-").button
+    btn_jan = types.InlineKeyboardButton('JAN', callback_data=f"{command}>>DAY::{year}-1")
+    btn_feb = types.InlineKeyboardButton('FEB', callback_data=f"{command}>>DAY::{year}-2")
+    btn_mar = types.InlineKeyboardButton('MAR', callback_data=f"{command}>>DAY::{year}-3")
+    btn_apr = types.InlineKeyboardButton('APR', callback_data=f"{command}>>DAY::{year}-4")
+    btn_may = types.InlineKeyboardButton('MAY', callback_data=f"{command}>>DAY::{year}-5")
+    btn_jun = types.InlineKeyboardButton('JUN', callback_data=f"{command}>>DAY::{year}-6")
+    btn_jul = types.InlineKeyboardButton('JUL', callback_data=f"{command}>>DAY::{year}-7")
+    btn_aug = types.InlineKeyboardButton('AUG', callback_data=f"{command}>>DAY::{year}-8")
+    btn_sep = types.InlineKeyboardButton('SEP', callback_data=f"{command}>>DAY::{year}-9")
+    btn_oct = types.InlineKeyboardButton('OCT', callback_data=f"{command}>>DAY::{year}-10")
+    btn_nov = types.InlineKeyboardButton('NOV', callback_data=f"{command}>>DAY::{year}-11")
+    btn_dec = types.InlineKeyboardButton('DEC', callback_data=f"{command}>>DAY::{year}-12")
     # btn_back = types.InlineKeyboardButton('Назад', callback_data=f"{'>>'.join(command.split('>>')[:-1])}::")
     keyboard.row(btn_jan, btn_feb, btn_mar, btn_apr)
     keyboard.row(btn_may, btn_jun, btn_jul, btn_aug)

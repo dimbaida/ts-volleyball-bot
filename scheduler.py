@@ -36,7 +36,7 @@ def send_birthday_reminder():
     today = datetime.datetime.now()
     bot = telebot.TeleBot(config.bot_token)
     for player in players:
-        print(f"[INFO] Comparing {player.name} {player.lastname} {player.birthdate} tp {today}")
+        print(f"[INFO] Checking birthday {player.name} {player.lastname} -> {player.birthdate}")
         if player.birthdate.month == today.month and player.birthdate.day == today.day:
             print("[INFO] Date match. Sending to chat")
             bot.send_message(config.telegram_group_id,

@@ -181,11 +181,21 @@ class Event:
                     elif player[2] is None:
                         players_none += f'\n{num_none}. {player[1]} {player[0]}'
                         num_none += 1
-
+            text = ''
             if connection:
                 connection.close()
-
-            return f'Придут:{players_yes}\n\nПропустят:{players_no}\n\nНе отметились:{players_none}'
+            if players_yes:
+                text += "Придут:"
+                text += players_yes
+            if players_no:
+                text += '\n\nПропустят:'
+                text += players_no
+            if players_none:
+                text += '\n\nНе отметились:'
+                text += players_none
+            else:
+                text += "\n\nВсе игроки отмечены"
+            return text
 
         except psycopg2.Error as e:
             print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")

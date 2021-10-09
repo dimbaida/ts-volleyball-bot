@@ -106,11 +106,12 @@ def callback_inline(call):
         keyboard = telebot.types.InlineKeyboardMarkup()
         btn_01 = telebot.types.InlineKeyboardButton('YES', callback_data=f'LIST_EVENTS>>EVENT>>YES::{event.id}')
         btn_02 = telebot.types.InlineKeyboardButton('NO', callback_data=f'LIST_EVENTS>>EVENT>>NO::{event.id}')
-        btn_03 = telebot.types.InlineKeyboardButton('Добавить гостя', callback_data=f'LIST_EVENTS>>EVENT>>INPUT_GUEST::{event.id}')
         btn_04 = telebot.types.InlineKeyboardButton('Список отметившихся', callback_data=f'LIST_EVENTS>>EVENT>>LIST_PLAYERS::{event.id}')
         btn_05 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
         keyboard.row(btn_01, btn_02)
-        keyboard.row(btn_03)
+        if event.type == 'train':
+            btn_03 = telebot.types.InlineKeyboardButton('Добавить гостя', callback_data=f'LIST_EVENTS>>EVENT>>INPUT_GUEST::{event.id}')
+            keyboard.row(btn_03)
         keyboard.row(btn_04)
         keyboard.row(btn_05)
         event_text = f"{event.icon} {event.date_formatted}"

@@ -65,6 +65,19 @@ def text(message):
                          parse_mode='HTML')
         player.purge_cache()
 
+    if menu_state == 'EDIT_GUEST':
+        guest = db.get_guest_by_id(data)
+        guest_name = message.text
+        guest.change_name(guest_name)
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
+        keyboard.row(btn)
+        bot.send_message(message.chat.id,
+                         f"<code>Новое имя гостя — {guest_name}</code>",
+                         parse_mode='HTML',
+                         reply_markup=keyboard)
+        player.purge_cache()
+
     if menu_state == 'INPUT_NOTE':
         event = db.get_event_by_id(data)
         note = message.text
@@ -107,13 +120,13 @@ def callback_inline(call):
         keyboard = telebot.types.InlineKeyboardMarkup()
         btn_01 = telebot.types.InlineKeyboardButton('YES', callback_data=f'LIST_EVENTS>>EVENT>>YES::{event.id}')
         btn_02 = telebot.types.InlineKeyboardButton('NO', callback_data=f'LIST_EVENTS>>EVENT>>NO::{event.id}')
-        btn_04 = telebot.types.InlineKeyboardButton('Список отметившихся', callback_data=f'LIST_EVENTS>>EVENT>>LIST_PLAYERS::{event.id}')
+        btn_03 = telebot.types.InlineKeyboardButton('Список отметившихся', callback_data=f'LIST_EVENTS>>EVENT>>LIST_PLAYERS::{event.id}')
         btn_05 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
         keyboard.row(btn_01, btn_02)
+        keyboard.row(btn_03)
         if event.type == 'train':
-            btn_03 = telebot.types.InlineKeyboardButton('Добавить гостя', callback_data=f'LIST_EVENTS>>EVENT>>INPUT_GUEST::{event.id}')
-            keyboard.row(btn_03)
-        keyboard.row(btn_04)
+            btn_04 = telebot.types.InlineKeyboardButton('Гости', callback_data=f'LIST_EVENTS>>EVENT>>GUESTS::{event.id}')
+            keyboard.row(btn_04)
         keyboard.row(btn_05)
         event_text = f"{event.icon} {event.date_formatted}"
         if event.note:
@@ -198,7 +211,73 @@ def callback_inline(call):
                               parse_mode='HTML',
                               reply_markup=keyboard)
 
-    if command == 'LIST_EVENTS>>EVENT>>INPUT_GUEST':
+    if command == 'LIST_EVENTS>>EVENT>>GUESTS':
+        event = db.get_event_by_id(data)
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        guests = event.guests()
+        if guests:
+            for guest in event.guests():
+                btn = telebot.types.InlineKeyboardButton(f"[Гость] {guest.name}", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>GUEST::{event.id}:{guest.id}')
+                keyboard.row(btn)
+            btn_new = telebot.types.InlineKeyboardButton(f"Добавить", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>INPUT_GUEST::{event.id}')
+            btn_back = telebot.types.InlineKeyboardButton(f"Назад", callback_data=f'LIST_EVENTS>>EVENT::{event.id}')
+            keyboard.row(btn_new)
+            keyboard.row(btn_back)
+            bot.edit_message_text(f'<code>Гости на {event.icon} {event.date_formatted}:</code>',
+                                  call.message.chat.id,
+                                  call.message.message_id,
+                                  parse_mode='HTML',
+                                  reply_markup=keyboard)
+        else:
+            btn_new = telebot.types.InlineKeyboardButton(f"Добавить", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>INPUT_GUEST::{event.id}')
+            btn_back = telebot.types.InlineKeyboardButton(f"Назад", callback_data=f'LIST_EVENTS>>EVENT::{event.id}')
+            keyboard.row(btn_new)
+            keyboard.row(btn_back)
+            bot.edit_message_text(f'<code>{event.icon} {event.date_formatted}\nСписок гостей пуст</code>',
+                                  call.message.chat.id,
+                                  call.message.message_id,
+                                  parse_mode='HTML',
+                                  reply_markup=keyboard)
+
+    if command == 'LIST_EVENTS>>EVENT>>GUESTS>>GUEST':
+        event_id, guest_id = data.split(':')
+        event = db.get_event_by_id(event_id)
+        guest = db.get_guest_by_id(guest_id)
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        btn_01 = telebot.types.InlineKeyboardButton(f"Изменить имя", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>GUEST>>EDIT::{guest.id}')
+        btn_02 = telebot.types.InlineKeyboardButton(f"Удалить", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>GUEST>>DELETE::{guest.id}')
+        btn_back = telebot.types.InlineKeyboardButton(f"Назад", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS::{event.id}')
+        keyboard.row(btn_01, btn_02)
+        keyboard.row(btn_back)
+        bot.edit_message_text(f"<code>[Гость] {guest.name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}:</code>",
+                              call.message.chat.id,
+                              call.message.message_id,
+                              parse_mode='HTML',
+                              reply_markup=keyboard)
+
+    if command == 'LIST_EVENTS>>EVENT>>GUESTS>>GUEST>>EDIT':
+        guest = db.get_guest_by_id(data)
+        player.write_cache(f'EDIT_GUEST::{guest.id}')
+        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+        bot.send_message(call.message.chat.id,
+                         f'<code>Введи новое имя гостя</code>',
+                         parse_mode='HTML',
+                         reply_markup=telebot.types.ReplyKeyboardRemove())
+
+    if command == 'LIST_EVENTS>>EVENT>>GUESTS>>GUEST>>DELETE':
+        guest = db.get_guest_by_id(data)
+        guest.delete()
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
+        keyboard.row(btn)
+        bot.edit_message_text(
+            f"<code>Гость удален</code>",
+            call.message.chat.id,
+            call.message.message_id,
+            parse_mode='HTML',
+            reply_markup=keyboard)
+
+    if command == 'LIST_EVENTS>>EVENT>>GUESTS>>INPUT_GUEST':
         event = db.get_event_by_id(data)
         player.write_cache(f'INPUT_GUEST::{event.id}')
         bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)

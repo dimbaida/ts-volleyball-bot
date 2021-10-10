@@ -173,6 +173,66 @@ class Player:
             print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
 
 
+class Guest:
+    def __init__(self,
+                 guest_id: int,
+                 name: str,
+                 event_id: int,
+                 added_by: int):
+        self.id: int = guest_id
+        self.event_id: int = event_id
+        self.name: str = name
+        self.added_by = added_by
+
+    def change_name(self, name: str):
+        """
+        Rename the guest
+        :param name: New name
+        """
+        try:
+            connection = psycopg2.connect(
+                host=host,
+                user=user,
+                password=password,
+                database=database)
+            connection.autocommit = True
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"""
+                       update guests set name = '{name}'
+                       where id = {self.id}
+                    """)
+            if connection:
+                connection.close()
+        except psycopg2.Error as e:
+            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+
+    def delete(self):
+        """
+        Deletes the guest
+        """
+        try:
+            connection = psycopg2.connect(
+                host=host,
+                user=user,
+                password=password,
+                database=database)
+            connection.autocommit = True
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"""  
+                        delete from guests * where id = {self.id};
+                    """)
+
+            if connection:
+                connection.close()
+
+        except psycopg2.Error as e:
+            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+
+
 class Event:
     def __init__(self,
                  event_id: int,
@@ -331,6 +391,7 @@ class Event:
                 cursor.execute(
                     f"""  
                         delete from attendance * where event_id = {self.id};
+                        delete from guests * where event_id = {self.id};
                         delete from events * where date = '{self.date}';
                     """)
 
@@ -366,7 +427,7 @@ class Event:
         self.type = new_type
         self.icon = ICONS[self.type]
 
-    def add_guest(self, guest_name: str, player: Player) -> None:
+    def add_guest(self, guest_name: str, player: Player) -> None:  # TODO: return Guest
         """
         Adds name to the 'guests' table
         :param guest_name: guest name
@@ -391,6 +452,36 @@ class Event:
             if connection:
                 connection.close()
 
+        except psycopg2.Error as e:
+            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+
+    def guests(self) -> list:
+        """
+        Returns the list of guests for the event
+        :return: guests
+        """
+        try:
+            connection = psycopg2.connect(
+                host=host,
+                user=user,
+                password=password,
+                database=database)
+            connection.autocommit = True
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"""  
+                        select id, name, event_id, added_by
+                        from guests
+                        where event_id = '{self.id}'
+                        order by timestamp asc
+                    """)
+                guests_data = cursor.fetchall()
+                guests = []
+                for guest in guests_data:
+                    guests.append(Guest(guest_id=guest[0], name=guest[1], event_id=guest[2], added_by=guest[3]))
+            if connection:
+                connection.close()
+            return guests
         except psycopg2.Error as e:
             print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
 
@@ -489,6 +580,40 @@ def get_event_by_id(event_id: int) -> Event:
             connection.close()
 
         return Event(event_id, event_date, event_type, event_note)
+
+    except psycopg2.Error as e:
+        print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+
+
+def get_guest_by_id(guest_id: int) -> Guest:
+    """
+        Get guest by id
+        :param guest_id: guest id
+        :return: Event
+        """
+    try:
+        connection = psycopg2.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=database)
+        connection.autocommit = True
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""  
+                    select id, name, event_id, added_by from guests where id='{guest_id}'
+                """)
+            guest = cursor.fetchall()
+            guest_id = guest[0][0]
+            guest_name = guest[0][1]
+            guest_event_id = guest[0][2]
+            guest_added_by = guest[0][3]
+
+        if connection:
+            connection.close()
+
+        return Guest(guest_id, guest_name, guest_event_id, guest_added_by)
 
     except psycopg2.Error as e:
         print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")

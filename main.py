@@ -12,13 +12,10 @@ bot = telebot.TeleBot(config.bot_token)
 def test(message):
     """
     Bot command for test purposes. Only available for the developers, telegram ids hardcoded
-    If you're a collaborator, add your telegram id to 'developers' var in 'config.py'
+    If you're a collaborator, add your telegram id into 'developers' var in 'config.py'
     """
     if message.from_user.id in config.developers:
-        player = db.get_player_by_telegram_id(message.from_user.id)
-        # player.write_state("INPUT_GUEST")
-        # player.write_cache("Some name")
-        bot.send_message(message.from_user.id, player.read_cache())
+        pass
 
 
 @bot.message_handler(commands=['get_id'], chat_types=['private'])
@@ -63,6 +60,9 @@ def text(message):
                          f"<code>Гостевой игрок — {guest_name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
                          parse_mode='HTML',
                          reply_markup=keyboard)
+        bot.send_message(config.telegram_group_id,
+                         f"<code>{player.lastname} {player.name} добавил гостя {guest_name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
+                         parse_mode='HTML')
         player.purge_cache()
 
     if menu_state == 'INPUT_NOTE':
@@ -82,6 +82,7 @@ def text(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
     player = db.get_player_by_telegram_id(call.message.chat.id)
+    player.purge_cache()
     print(f'{player.name} {player.lastname} callback', call.data)
     command, data = call.data.split('::')
 

@@ -5,7 +5,7 @@ from common_constants import ICONS
 import db_commands as db
 
 
-def send_event_reminder():
+def send_event_reminder() -> None:
     """
     Sends the reminder to players who didn't yet make any decision on the nearest upcoming event
     """
@@ -27,14 +27,12 @@ def send_event_reminder():
                              f'<code>{event_text}</code>',
                              reply_markup=keyboard,
                              parse_mode='HTML')
-            # debug message
-            bot.send_message(381956774,
-                             f'<code>[INFO] Reminder on {event.date} sent to: {player.name} {player.lastname}</code>',
-                             parse_mode='HTML',
-                             disable_notification=True)
 
 
-def send_birthday_reminder():
+def send_birthday_reminder() -> None:
+    """
+    Sends the reminder into the group about players who have birthday today
+    """
     players = db.get_all_players()
     today = datetime.datetime.now()
     bot = telebot.TeleBot(config.bot_token)

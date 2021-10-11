@@ -266,16 +266,24 @@ def callback_inline(call):
 
     if command == 'LIST_EVENTS>>EVENT>>GUESTS>>GUEST>>DELETE':
         guest = db.get_guest_by_id(data)
-        guest.delete()
         keyboard = telebot.types.InlineKeyboardMarkup()
         btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
         keyboard.row(btn)
-        bot.edit_message_text(
-            f"<code>Гость удален</code>",
-            call.message.chat.id,
-            call.message.message_id,
-            parse_mode='HTML',
-            reply_markup=keyboard)
+        if guest.added_by == call.message.chat.id:
+            guest.delete()
+            bot.edit_message_text(
+                f"<code>Гость удален</code>",
+                call.message.chat.id,
+                call.message.message_id,
+                parse_mode='HTML',
+                reply_markup=keyboard)
+        else:
+            bot.edit_message_text(
+                f"<code>Гостя может удалить только пригласивший его игрок</code>",
+                call.message.chat.id,
+                call.message.message_id,
+                parse_mode='HTML',
+                reply_markup=keyboard)
 
     if command == 'LIST_EVENTS>>EVENT>>GUESTS>>INPUT_GUEST':
         event = db.get_event_by_id(data)

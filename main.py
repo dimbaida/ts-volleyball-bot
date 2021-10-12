@@ -29,20 +29,27 @@ def get_id(message):
 
 @bot.message_handler(commands=['start'], chat_types=['private'])
 def start(message):
-    player = db.get_player_by_telegram_id(message.chat.id)
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    btn_01 = telebot.types.InlineKeyboardButton(f"Список событий", callback_data=f'LIST_EVENTS::')
-    btn_02 = telebot.types.InlineKeyboardButton(f"Управление событиями", callback_data=f'MANAGE::')
-    btn_03 = telebot.types.InlineKeyboardButton(f"Выход", callback_data=f'EXIT::')
-    keyboard.row(btn_01)
-    if player.admin:
-        keyboard.row(btn_02)
-    keyboard.row(btn_03)
-    bot.send_message(message.chat.id,
-                     '<code>Следующие события:</code>',
-                     reply_markup=keyboard,
-                     parse_mode='HTML',
-                     disable_notification=True)
+    try:
+        player = db.get_player_by_telegram_id(message.chat.id)
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        btn_01 = telebot.types.InlineKeyboardButton(f"Список событий", callback_data=f'LIST_EVENTS::')
+        btn_02 = telebot.types.InlineKeyboardButton(f"Управление событиями", callback_data=f'MANAGE::')
+        btn_03 = telebot.types.InlineKeyboardButton(f"Выход", callback_data=f'EXIT::')
+        keyboard.row(btn_01)
+        if player.admin:
+            keyboard.row(btn_02)
+        keyboard.row(btn_03)
+        bot.send_message(message.chat.id,
+                         '<code>Следующие события:</code>',
+                         reply_markup=keyboard,
+                         parse_mode='HTML',
+                         disable_notification=True)
+    except IndexError:
+        print(f'[Error] Request from [{message.chat.id}] — unknown player')
+        bot.send_message(message.chat.id,
+                         '<code>Тебя нет в списке игроков. Бот не будет с тобой работать.</code>',
+                         parse_mode='HTML',
+                         disable_notification=True)
 
 
 @bot.message_handler(content_types=['text'], chat_types=['private'])

@@ -276,7 +276,9 @@ def callback_inline(call):
         keyboard = telebot.types.InlineKeyboardMarkup()
         btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
         keyboard.row(btn)
-        if guest.added_by == call.message.chat.id:
+        if guest.added_by == call.message.chat.id or player.admin:
+            name = guest.name
+            event = db.get_event_by_id(guest.event_id)
             guest.delete()
             bot.edit_message_text(
                 f"<code>Гость удален</code>",
@@ -284,9 +286,12 @@ def callback_inline(call):
                 call.message.message_id,
                 parse_mode='HTML',
                 reply_markup=keyboard)
+            bot.send_message(config.telegram_group_id,
+                             f"<code>{player.lastname} {player.name} удалил гостя {name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
+                             parse_mode='HTML')
         else:
             bot.edit_message_text(
-                f"<code>Гостя может удалить только пригласивший его игрок</code>",
+                f"<code>Гостя может удалить только пригласивший его игрок или пользователь с правами администратора</code>",
                 call.message.chat.id,
                 call.message.message_id,
                 parse_mode='HTML',
@@ -347,6 +352,9 @@ def callback_inline(call):
                               call.message.message_id,
                               parse_mode='HTML',
                               reply_markup=keyboard)
+        bot.send_message(config.telegram_group_id,
+                         f"<code>{player.name} {player.lastname} изменил {old_icon} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
+                         parse_mode='HTML')
 
     if command == 'MANAGE>>EVENT>>INPUT_NOTE':
         event = db.get_event_by_id(data)
@@ -449,7 +457,7 @@ def callback_inline(call):
                               parse_mode='HTML',
                               reply_markup=keyboard)
         bot.send_message(config.telegram_group_id,
-                         f"<code>{player.name} {player.lastname} создал {event.icon} {event.date_formatted}</code>",
+                         f"<code>{player.lastname} {player.name} создал {event.icon} {event.date_formatted}</code>",
                          parse_mode='HTML')
 
     # GENERAL

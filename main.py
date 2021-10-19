@@ -122,7 +122,7 @@ def callback_inline(call):
                               parse_mode='HTML',
                               reply_markup=keyboard)
 
-    if command == 'LIST_EVENTS>>EVENT':
+    if command == 'LIST_EVENTS>>EVENT':  # TODO: remove 'list players' command and output string here
         event = db.get_event_by_id(data)
         keyboard = telebot.types.InlineKeyboardMarkup()
         btn_01 = telebot.types.InlineKeyboardButton('YES', callback_data=f'LIST_EVENTS>>EVENT>>YES::{event.id}')

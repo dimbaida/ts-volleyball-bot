@@ -31,7 +31,7 @@ def send_event_reminder() -> None:
 
 def send_birthday_reminder() -> None:
     """
-    Sends the reminder into the group about players who have birthday today
+    Sends the reminder to the group about players who have birthday today
     """
     players = db.get_all_players()
     today = datetime.datetime.now()

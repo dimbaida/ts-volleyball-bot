@@ -448,6 +448,9 @@ def callback_inline(call):
                               call.message.message_id,
                               parse_mode='HTML',
                               reply_markup=keyboard)
+        bot.send_message(config.telegram_group_id,
+                         f"<code>{player.name} {player.lastname} создал {event.icon} {event.date_formatted}</code>",
+                         parse_mode='HTML')
 
     # GENERAL
 

@@ -54,7 +54,7 @@ def keyboard_days(command, year, month) -> types.InlineKeyboardMarkup():
     :param command: the string command for callback_data
     :param year: year
     :param month: month
-    :return:  Keyboard with 12 the list of days for the given month
+    :return: Keyboard with 12 the list of days for the given month
     """
     num_days = calendar.monthrange(int(year), int(month))[1]
     days = list(range(1, num_days + 1))

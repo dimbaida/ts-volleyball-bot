@@ -1,6 +1,6 @@
 import datetime
 import calendar
-from keyboa import Keyboa, Button
+from keyboa import Keyboa
 from telebot import types
 
 

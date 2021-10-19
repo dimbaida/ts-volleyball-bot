@@ -27,7 +27,10 @@ def get_id(message):
                      disable_notification=True)
 
 
-@bot.message_handler(commands=['start'], chat_types=['private'])
+# TODO: create separate message handler for MANAGE section
+
+
+@bot.message_handler(commands=['start'], chat_types=['private'])  # TODO: start with the list of events
 def start(message):
     try:
         player = db.get_player_by_telegram_id(message.chat.id)
@@ -112,7 +115,7 @@ def callback_inline(call):
         keyboard = telebot.types.InlineKeyboardMarkup()
         for event in db.upcoming_events():
             btn = telebot.types.InlineKeyboardButton(f"{event.icon}  {event.date_formatted}",
-                                                     callback_data=f'LIST_EVENTS>>EVENT::{event.id}')
+                                                     callback_data=f'LIST_EVENTS>>EVENT::{event.id}:')
             keyboard.row(btn)
         btn_exit = telebot.types.InlineKeyboardButton(f"Выйти", callback_data=f'EXIT::')
         keyboard.row(btn_exit)
@@ -122,102 +125,48 @@ def callback_inline(call):
                               parse_mode='HTML',
                               reply_markup=keyboard)
 
-    if command == 'LIST_EVENTS>>EVENT':  # TODO: remove 'list players' command and output string here
-        event = db.get_event_by_id(data)
+    if command.startswith('LIST_EVENTS>>EVENT'):
+        event_id, item = data.split(':')
+        event = db.get_event_by_id(event_id)
         keyboard = telebot.types.InlineKeyboardMarkup()
-        btn_01 = telebot.types.InlineKeyboardButton('YES', callback_data=f'LIST_EVENTS>>EVENT>>YES::{event.id}')
-        btn_02 = telebot.types.InlineKeyboardButton('NO', callback_data=f'LIST_EVENTS>>EVENT>>NO::{event.id}')
-        btn_03 = telebot.types.InlineKeyboardButton('Список отметившихся', callback_data=f'LIST_EVENTS>>EVENT>>LIST_PLAYERS::{event.id}')
-        btn_05 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
+
+        btn_01 = telebot.types.InlineKeyboardButton('YES', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:yes')
+        btn_02 = telebot.types.InlineKeyboardButton('NO', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:no')
+        btn_back = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
         keyboard.row(btn_01, btn_02)
-        keyboard.row(btn_03)
-        if event.type == 'train':
-            btn_04 = telebot.types.InlineKeyboardButton('Гости', callback_data=f'LIST_EVENTS>>EVENT>>GUESTS::{event.id}')
-            keyboard.row(btn_04)
-        keyboard.row(btn_05)
-        event_text = f"{event.icon} {event.date_formatted}"
+
+        keyboard.row(btn_back)
+
+        if item == 'yes':
+            att = player.check_attendance(event.date)
+            if att == False or att is None:
+                player.set_decision(event.date, True)
+                bot.send_message(config.telegram_group_id,
+                                 f"<code>{player.lastname} {player.name} {ICONS['right_arrow']} {event.icon} {event.date_formatted} {ICONS['yes']}</code>",
+                                 parse_mode='HTML',
+                                 disable_notification=True)
+
+        if item == 'no':
+            att = player.check_attendance(event.date)
+            if att == True or att is None:
+                player.set_decision(event.date, False)
+                bot.send_message(config.telegram_group_id,
+                                 f"<code>{player.lastname} {player.name} {ICONS['right_arrow']} {event.icon} {event.date_formatted} {ICONS['no']}</code>",
+                                 parse_mode='HTML',
+                                 disable_notification=True)
+
+        event_text = f'{event.icon} {event.date_formatted}:'
         if event.note:
             event_text += f"\n{event.note}"
+        event_text += f'\n\n{event.players_formatted()}'
+
         bot.edit_message_text(f'<code>{event_text}</code>',
                               call.message.chat.id,
                               call.message.message_id,
                               parse_mode='HTML',
                               reply_markup=keyboard)
 
-    if command == 'LIST_EVENTS>>EVENT>>YES':
-        event = db.get_event_by_id(data)
-        player = db.get_player_by_telegram_id(call.message.chat.id)
-        if player.check_attendance(event.date):
-            keyboard = telebot.types.InlineKeyboardMarkup()
-            btn_01 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS>>EVENT::{event.id}')
-            btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
-            keyboard.row(btn_01)
-            keyboard.row(btn_02)
-            bot.edit_message_text(f"<code>Ты уже ранее был отмечен на {event.icon} {event.date_formatted} {ICONS['yes']}</code>",
-                                  call.message.chat.id,
-                                  call.message.message_id,
-                                  parse_mode='HTML',
-                                  reply_markup=keyboard)
-
-        else:
-            player.set_decision(event.date, True)
-            keyboard = telebot.types.InlineKeyboardMarkup()
-            btn_01 = telebot.types.InlineKeyboardButton('Вернуться к списку событий', callback_data=f'LIST_EVENTS::')
-            btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
-            keyboard.row(btn_01)
-            keyboard.row(btn_02)
-            bot.edit_message_text(f"<code>Отмечено посещение {ICONS['right_arrow']} {event.icon} {event.date_formatted} {ICONS['yes']}</code>",
-                                  call.message.chat.id,
-                                  call.message.message_id,
-                                  parse_mode='HTML',
-                                  reply_markup=keyboard)
-            bot.send_message(config.telegram_group_id,
-                             f"<code>{player.lastname} {player.name} {ICONS['right_arrow']} {event.icon} {event.date_formatted} {ICONS['yes']}</code>",
-                             parse_mode='HTML',
-                             disable_notification=True)
-
-    if command == 'LIST_EVENTS>>EVENT>>NO':
-        event = db.get_event_by_id(data)
-        att = player.check_attendance(event.date)
-        if not att and att is not None:
-            keyboard = telebot.types.InlineKeyboardMarkup()
-            btn_01 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS>>EVENT::{data}')
-            btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
-            keyboard.row(btn_01)
-            keyboard.row(btn_02)
-            bot.edit_message_text(f"<code>Ты уже ранее был отмечен на {event.icon} {event.date_formatted} {ICONS['no']}</code>",
-                                  call.message.chat.id,
-                                  call.message.message_id,
-                                  parse_mode='HTML',
-                                  reply_markup=keyboard)
-        else:
-            player.set_decision(event.date, False)
-            keyboard = telebot.types.InlineKeyboardMarkup()
-            btn_01 = telebot.types.InlineKeyboardButton('Вернуться к списку событий', callback_data=f'LIST_EVENTS::')
-            btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
-            keyboard.row(btn_01)
-            keyboard.row(btn_02)
-            bot.edit_message_text(f"<code>Отмечено посещение {ICONS['right_arrow']} {event.icon} {event.date_formatted} {ICONS['no']}</code>",
-                                  call.message.chat.id,
-                                  call.message.message_id,
-                                  parse_mode='HTML',
-                                  reply_markup=keyboard)
-            bot.send_message(config.telegram_group_id,
-                             f"<code>{player.lastname} {player.name} {ICONS['right_arrow']} {event.icon} {event.date_formatted} {ICONS['no']}</code>",
-                             parse_mode='HTML',
-                             disable_notification=True)
-
-    if command == 'LIST_EVENTS>>EVENT>>LIST_PLAYERS':
-        event = db.get_event_by_id(data)
-        keyboard = telebot.types.InlineKeyboardMarkup()
-        btn_01 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS>>EVENT::{event.id}')
-        keyboard.row(btn_01)
-        bot.edit_message_text(f'<code>{event.icon} {event.date_formatted}:\n\n{event.players_formatted()}</code>',
-                              call.message.chat.id,
-                              call.message.message_id,
-                              parse_mode='HTML',
-                              reply_markup=keyboard)
-
+    # TODO: move guests to MANAGE section
     if command == 'LIST_EVENTS>>EVENT>>GUESTS':
         event = db.get_event_by_id(data)
         keyboard = telebot.types.InlineKeyboardMarkup()
@@ -364,6 +313,8 @@ def callback_inline(call):
                          f'<code>Введи примечание для {event.icon} {event.date_formatted}</code>',
                          parse_mode='HTML',
                          reply_markup=telebot.types.ReplyKeyboardRemove())
+
+    # TODO: Add Clear Note
 
     if command == 'MANAGE>>EVENT>>DELETE':
         event = db.get_event_by_id(data)

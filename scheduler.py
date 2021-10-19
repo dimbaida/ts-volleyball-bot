@@ -43,3 +43,4 @@ def send_birthday_reminder() -> None:
             bot.send_message(config.telegram_group_id,
                              f"<code>{player.name} {player.lastname} празднует сегодня день рождения! {ICONS['party']}</code>",
                              parse_mode='HTML')
+    print(f"[INFO] Birthdays check finished")

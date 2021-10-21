@@ -32,25 +32,57 @@ def get_id(message):
 
 @bot.message_handler(commands=['start'], chat_types=['private'])  # TODO: start with the list of events
 def start(message):
-    try:
-        player = db.get_player_by_telegram_id(message.chat.id)
+    if db.check_player(message.from_user.id):
         keyboard = telebot.types.InlineKeyboardMarkup()
-        btn_01 = telebot.types.InlineKeyboardButton(f"Список событий", callback_data=f'LIST_EVENTS::')
-        btn_02 = telebot.types.InlineKeyboardButton(f"Управление событиями", callback_data=f'MANAGE::')
-        btn_03 = telebot.types.InlineKeyboardButton(f"Выход", callback_data=f'EXIT::')
-        keyboard.row(btn_01)
-        if player.admin:
-            keyboard.row(btn_02)
-        keyboard.row(btn_03)
-        bot.send_message(message.chat.id,
+        for event in db.upcoming_events():
+            btn = telebot.types.InlineKeyboardButton(f"{event.icon}  {event.date_formatted}",
+                                                     callback_data=f'LIST_EVENTS>>EVENT::{event.id}:')
+            keyboard.row(btn)
+        btn_exit = telebot.types.InlineKeyboardButton(f"Выйти", callback_data=f'EXIT::')
+        keyboard.row(btn_exit)
+        bot.send_message(message.from_user.id,
                          '<code>Следующие события:</code>',
-                         reply_markup=keyboard,
+                         parse_mode='HTML',
+                         reply_markup=keyboard)
+
+    else:
+        print(f'[Error] Request from [{message.from_user.id}] — unknown player')
+        bot.send_message(message.from_user.id,
+                         '<code>Тебя нет в списке игроков. Бот не будет с тобой работать. Для того, чтобы тебя добавили, напиши администратору</code>',
                          parse_mode='HTML',
                          disable_notification=True)
+
+
+@bot.message_handler(commands=['manage'], chat_types=['private'])
+def manage(message):
+    try:
+        player = db.get_player_by_telegram_id(message.from_user.id)
+        if player.admin:
+            keyboard = telebot.types.InlineKeyboardMarkup()
+            for event in db.upcoming_events():
+                btn = telebot.types.InlineKeyboardButton(f"Изменить {event.icon} {event.date_formatted}",
+                                                         callback_data=f'MANAGE>>EVENT::{event.id}')
+                keyboard.row(btn)
+            btn_new = telebot.types.InlineKeyboardButton(f"Создать", callback_data=f'MANAGE>>CREATE::')
+            btn_exit = telebot.types.InlineKeyboardButton(f"Выйти", callback_data=f'EXIT::')
+            keyboard.row(btn_new)
+            keyboard.row(btn_exit)
+            bot.send_message(message.from_user.id,
+                             '<code>Следующие события:</code>',
+                             parse_mode='HTML',
+                             reply_markup=keyboard)
+
+        else:
+            print(f'[Error] Request from [{message.from_user.id}] — forbidden to manage, not an admin')
+            bot.send_message(message.from_user.id,
+                             '<code>Эта секция доступна только пользователям с правами администратора.</code>',
+                             parse_mode='HTML',
+                             disable_notification=True)
+
     except IndexError:
-        print(f'[Error] Request from [{message.chat.id}] — unknown player')
-        bot.send_message(message.chat.id,
-                         '<code>Тебя нет в списке игроков. Бот не будет с тобой работать.</code>',
+        print(f'[Error] Request from [{message.from_user.id}] — unknown player')
+        bot.send_message(message.from_user.id,
+                         '<code>Тебя нет в списке игроков. Бот не будет с тобой работать. Для того, чтобы тебя добавили, напиши администратору</code>',
                          parse_mode='HTML',
                          disable_notification=True)
 
@@ -114,7 +146,7 @@ def callback_inline(call):
     if command == 'LIST_EVENTS':
         keyboard = telebot.types.InlineKeyboardMarkup()
         for event in db.upcoming_events():
-            btn = telebot.types.InlineKeyboardButton(f"{event.icon}  {event.date_formatted}",
+            btn = telebot.types.InlineKeyboardButton(f"{event.icon} {event.date_formatted}",
                                                      callback_data=f'LIST_EVENTS>>EVENT::{event.id}:')
             keyboard.row(btn)
         btn_exit = telebot.types.InlineKeyboardButton(f"Выйти", callback_data=f'EXIT::')
@@ -125,7 +157,7 @@ def callback_inline(call):
                               parse_mode='HTML',
                               reply_markup=keyboard)
 
-    if command.startswith('LIST_EVENTS>>EVENT'):
+    if command.startswith('LIST_EVENTS>>EVENT'):  # TODO: get back the 'guests' section
         event_id, item = data.split(':')
         event = db.get_event_by_id(event_id)
         keyboard = telebot.types.InlineKeyboardMarkup()
@@ -166,7 +198,6 @@ def callback_inline(call):
                               parse_mode='HTML',
                               reply_markup=keyboard)
 
-    # TODO: move guests to MANAGE section
     if command == 'LIST_EVENTS>>EVENT>>GUESTS':
         event = db.get_event_by_id(data)
         keyboard = telebot.types.InlineKeyboardMarkup()

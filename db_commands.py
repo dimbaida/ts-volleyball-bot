@@ -517,6 +517,36 @@ class Event:
             print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
 
 
+def check_player(telegram_id: int) -> bool:
+    """
+    Checks if telegram_id is in the list of players
+    :param telegram_id: telegram id
+    :return: True / False
+    """
+    try:
+        connection = psycopg2.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=database)
+        connection.autocommit = True
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""  
+                    select true from players where telegram_id={telegram_id};
+                """)
+            player = cursor.fetchall()
+            player = player[0]
+        if connection:
+            connection.close()
+
+        return True if player else False
+
+    except psycopg2.Error as e:
+        print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+
+
 def get_event_by_date(date: str) -> Event:
     """
     Get event by its date

@@ -27,10 +27,7 @@ def get_id(message):
                      disable_notification=True)
 
 
-# TODO: create separate message handler for MANAGE section
-
-
-@bot.message_handler(commands=['start'], chat_types=['private'])  # TODO: start with the list of events
+@bot.message_handler(commands=['start'], chat_types=['private'])
 def start(message):
     if db.check_player(message.from_user.id):
         keyboard = telebot.types.InlineKeyboardMarkup()
@@ -193,11 +190,14 @@ def callback_inline(call):
             event_text += f"\n{event.note}"
         event_text += f'\n\n{event.players_formatted()}'
 
-        bot.edit_message_text(f'<code>{event_text}</code>',
-                              call.message.chat.id,
-                              call.message.message_id,
-                              parse_mode='HTML',
-                              reply_markup=keyboard)
+        try:
+            bot.edit_message_text(f'<code>{event_text}</code>',
+                                  call.message.chat.id,
+                                  call.message.message_id,
+                                  parse_mode='HTML',
+                                  reply_markup=keyboard)
+        except:
+            pass
 
     if command == 'LIST_EVENTS>>EVENT>>GUESTS':
         event = db.get_event_by_id(data)

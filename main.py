@@ -157,16 +157,17 @@ def callback_inline(call):
                               parse_mode='HTML',
                               reply_markup=keyboard)
 
-    if command.startswith('LIST_EVENTS>>EVENT'):  # TODO: get back the 'guests' section
+    if command == 'LIST_EVENTS>>EVENT':
         event_id, item = data.split(':')
         event = db.get_event_by_id(event_id)
         keyboard = telebot.types.InlineKeyboardMarkup()
 
         btn_01 = telebot.types.InlineKeyboardButton('YES', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:yes')
         btn_02 = telebot.types.InlineKeyboardButton('NO', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:no')
+        btn_03 = telebot.types.InlineKeyboardButton('Гости', callback_data=f'LIST_EVENTS>>EVENT>>GUESTS::{event.id}')
         btn_back = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
         keyboard.row(btn_01, btn_02)
-
+        keyboard.row(btn_03)
         keyboard.row(btn_back)
 
         if item == 'yes':
@@ -207,7 +208,7 @@ def callback_inline(call):
                 btn = telebot.types.InlineKeyboardButton(f"[Гость] {guest.name}", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>GUEST::{event.id}:{guest.id}')
                 keyboard.row(btn)
             btn_new = telebot.types.InlineKeyboardButton(f"Добавить", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>INPUT_GUEST::{event.id}')
-            btn_back = telebot.types.InlineKeyboardButton(f"Назад", callback_data=f'LIST_EVENTS>>EVENT::{event.id}')
+            btn_back = telebot.types.InlineKeyboardButton(f"Назад", callback_data=f'LIST_EVENTS>>EVENT::{event.id}:')
             keyboard.row(btn_new)
             keyboard.row(btn_back)
             bot.edit_message_text(f'<code>Гости на {event.icon} {event.date_formatted}:</code>',
@@ -217,7 +218,7 @@ def callback_inline(call):
                                   reply_markup=keyboard)
         else:
             btn_new = telebot.types.InlineKeyboardButton(f"Добавить", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>INPUT_GUEST::{event.id}')
-            btn_back = telebot.types.InlineKeyboardButton(f"Назад", callback_data=f'LIST_EVENTS>>EVENT::{event.id}')
+            btn_back = telebot.types.InlineKeyboardButton(f"Назад", callback_data=f'LIST_EVENTS>>EVENT::{event.id}:')
             keyboard.row(btn_new)
             keyboard.row(btn_back)
             bot.edit_message_text(f'<code>{event.icon} {event.date_formatted}\nСписок гостей пуст</code>',

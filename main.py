@@ -52,7 +52,7 @@ def start(message):
 
 @bot.message_handler(commands=['manage'], chat_types=['private'])
 def manage(message):
-    try:
+    if db.check_player(message.from_user.id):
         player = db.get_player_by_telegram_id(message.from_user.id)
         if player.admin:
             keyboard = telebot.types.InlineKeyboardMarkup()
@@ -76,7 +76,7 @@ def manage(message):
                              parse_mode='HTML',
                              disable_notification=True)
 
-    except IndexError:
+    else:
         print(f'[Error] Request from [{message.from_user.id}] — unknown player')
         bot.send_message(message.from_user.id,
                          '<code>Тебя нет в списке игроков. Бот не будет с тобой работать. Для того, чтобы тебя добавили, напиши администратору</code>',

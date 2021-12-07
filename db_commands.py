@@ -537,7 +537,6 @@ def check_player(telegram_id: int) -> bool:
                     select true from players where telegram_id={telegram_id};
                 """)
             player = cursor.fetchall()
-            player = player[0]
         if connection:
             connection.close()
 

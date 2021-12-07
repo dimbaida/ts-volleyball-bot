@@ -86,51 +86,59 @@ def manage(message):
 
 @bot.message_handler(content_types=['text'], chat_types=['private'])
 def text(message):
-    player = db.get_player_by_telegram_id(message.from_user.id)
-    cache = player.read_cache()
-    if cache:
-        menu_state, data = cache.split('::')
-        if menu_state == 'INPUT_GUEST':
-            event = db.get_event_by_id(data)
-            guest_name = message.text
-            event.add_guest(guest_name, player)
-            keyboard = telebot.types.InlineKeyboardMarkup()
-            btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
-            keyboard.row(btn)
-            bot.send_message(message.chat.id,
-                             f"<code>Гостевой игрок — {guest_name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
-                             parse_mode='HTML',
-                             reply_markup=keyboard)
-            bot.send_message(config.telegram_group_id,
-                             f"<code>{player.lastname} {player.name} добавил гостя {guest_name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
-                             parse_mode='HTML')
-            player.purge_cache()
+    if db.check_player(message.from_user.id):
+        player = db.get_player_by_telegram_id(message.from_user.id)
+        cache = player.read_cache()
+        if cache:
+            menu_state, data = cache.split('::')
+            if menu_state == 'INPUT_GUEST':
+                event = db.get_event_by_id(data)
+                guest_name = message.text
+                event.add_guest(guest_name, player)
+                keyboard = telebot.types.InlineKeyboardMarkup()
+                btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
+                keyboard.row(btn)
+                bot.send_message(message.chat.id,
+                                 f"<code>Гостевой игрок — {guest_name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
+                                 parse_mode='HTML',
+                                 reply_markup=keyboard)
+                bot.send_message(config.telegram_group_id,
+                                 f"<code>{player.lastname} {player.name} добавил гостя {guest_name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
+                                 parse_mode='HTML')
+                player.purge_cache()
 
-        if menu_state == 'EDIT_GUEST':
-            guest = db.get_guest_by_id(data)
-            guest_name = message.text
-            guest.change_name(guest_name)
-            keyboard = telebot.types.InlineKeyboardMarkup()
-            btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
-            keyboard.row(btn)
-            bot.send_message(message.chat.id,
-                             f"<code>Новое имя гостя — {guest_name}</code>",
-                             parse_mode='HTML',
-                             reply_markup=keyboard)
-            player.purge_cache()
+            if menu_state == 'EDIT_GUEST':
+                guest = db.get_guest_by_id(data)
+                guest_name = message.text
+                guest.change_name(guest_name)
+                keyboard = telebot.types.InlineKeyboardMarkup()
+                btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
+                keyboard.row(btn)
+                bot.send_message(message.chat.id,
+                                 f"<code>Новое имя гостя — {guest_name}</code>",
+                                 parse_mode='HTML',
+                                 reply_markup=keyboard)
+                player.purge_cache()
 
-        if menu_state == 'INPUT_NOTE':
-            event = db.get_event_by_id(data)
-            note = message.text
-            event.update_note(note, player)
-            keyboard = telebot.types.InlineKeyboardMarkup()
-            btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'MANAGE::')
-            keyboard.row(btn)
-            bot.send_message(message.chat.id,
-                             f'<code>Добавлено примечание {event.icon} {event.date_formatted}:\n"{note}"</code>',
-                             parse_mode='HTML',
-                             reply_markup=keyboard)
-            player.purge_cache()
+            if menu_state == 'INPUT_NOTE':
+                event = db.get_event_by_id(data)
+                note = message.text
+                event.update_note(note, player)
+                keyboard = telebot.types.InlineKeyboardMarkup()
+                btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'MANAGE::')
+                keyboard.row(btn)
+                bot.send_message(message.chat.id,
+                                 f'<code>Добавлено примечание {event.icon} {event.date_formatted}:\n"{note}"</code>',
+                                 parse_mode='HTML',
+                                 reply_markup=keyboard)
+                player.purge_cache()
+    else:
+        print(f'[Error] Request from [{message.from_user.id}] — unknown player')
+        bot.send_message(message.from_user.id,
+                         '<code>Тебя нет в списке игроков. Бот не будет с тобой работать. Для того, чтобы тебя добавили, напиши администратору</code>',
+                         parse_mode='HTML',
+                         disable_notification=True)
+
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -347,8 +355,6 @@ def callback_inline(call):
                          f'<code>Введи примечание для {event.icon} {event.date_formatted}</code>',
                          parse_mode='HTML',
                          reply_markup=telebot.types.ReplyKeyboardRemove())
-
-    # TODO: Add Clear Note
 
     if command == 'MANAGE>>EVENT>>DELETE':
         event = db.get_event_by_id(data)

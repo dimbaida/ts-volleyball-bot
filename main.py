@@ -140,7 +140,6 @@ def text(message):
                          disable_notification=True)
 
 
-
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
     player = db.get_player_by_telegram_id(call.message.chat.id)
@@ -174,7 +173,8 @@ def callback_inline(call):
         btn_03 = telebot.types.InlineKeyboardButton('Гости', callback_data=f'LIST_EVENTS>>EVENT>>GUESTS::{event.id}')
         btn_back = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
         keyboard.row(btn_01, btn_02)
-        keyboard.row(btn_03)
+        if event.type == 'train':
+            keyboard.row(btn_03)
         keyboard.row(btn_back)
 
         if item == 'yes':

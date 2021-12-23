@@ -850,7 +850,7 @@ def create_event(event_date: str, event_type: str) -> Event:
             event_id = event[0][0]
             event_date = event[0][1]
             event_type = event[0][2]
-            event_note = event[0][2]
+            event_note = event[0][3]
 
         if connection:
             connection.close()

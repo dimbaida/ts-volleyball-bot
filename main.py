@@ -8,14 +8,14 @@ import db_commands as db
 bot = telebot.TeleBot(config.bot_token)
 
 
-@bot.message_handler(commands=['glory'], chat_types=['private'])
+@bot.message_handler(commands=['test'], chat_types=['private'])
 def test(message):
     """
     Bot command for test purposes. Only available for the developers, telegram ids hardcoded
     If you're a collaborator, add your telegram id into 'developers' var in 'config.py'
     """
     if message.from_user.id in config.developers:
-        bot.send_message(config.telegram_group_id, "СЛАВА УКРАЇНІ!", parse_mode='HTML')
+        pass
 
 
 @bot.message_handler(commands=['get_id'], chat_types=['private'])

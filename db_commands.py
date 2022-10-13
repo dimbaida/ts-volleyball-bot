@@ -353,23 +353,23 @@ class Event:
 
             text = ''
             if players_yes:
-                text += "Придут:"
+                text += "Прийдуть:"
                 text += players_yes
                 text += '\n\n'
             if guests:
-                text += "Гости:"
+                text += "Гості:"
                 text += guests_str
                 text += '\n\n'
             if players_no:
-                text += 'Пропустят:'
+                text += 'Пропустять:'
                 text += players_no
                 text += '\n\n'
             if players_none:
-                text += 'Не отметились:'
+                text += 'Не відмітились:'
                 text += players_none
                 text += '\n\n'
             else:
-                text += "Все игроки отмечены"
+                text += "Всі гравці відмічені"
             return text
 
         except psycopg2.Error as e:

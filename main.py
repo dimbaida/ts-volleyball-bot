@@ -21,7 +21,7 @@ def test(message):
 @bot.message_handler(commands=['get_id'], chat_types=['private'])
 def get_id(message):
     bot.send_message(message.from_user.id,
-                     f'<code>твой telegram ID: {message.from_user.id}</code>',
+                     f'<code>твій telegram ID: {message.from_user.id}</code>',
                      reply_markup=telebot.types.ReplyKeyboardRemove(),
                      parse_mode='HTML',
                      disable_notification=True)
@@ -35,17 +35,17 @@ def start(message):
             btn = telebot.types.InlineKeyboardButton(f"{event.icon}  {event.date_formatted}",
                                                      callback_data=f'LIST_EVENTS>>EVENT::{event.id}:')
             keyboard.row(btn)
-        btn_exit = telebot.types.InlineKeyboardButton(f"Выйти", callback_data=f'EXIT::')
+        btn_exit = telebot.types.InlineKeyboardButton(f"Вийти", callback_data=f'EXIT::')
         keyboard.row(btn_exit)
         bot.send_message(message.from_user.id,
-                         '<code>Следующие события:</code>',
+                         '<code>Наступні події:</code>',
                          parse_mode='HTML',
                          reply_markup=keyboard)
 
     else:
         print(f'[Error] Request from [{message.from_user.id}] — unknown player')
         bot.send_message(message.from_user.id,
-                         '<code>Тебя нет в списке игроков. Бот не будет с тобой работать. Для того, чтобы тебя добавили, напиши администратору</code>',
+                         '<code>Тебе немає в списку гравців. Напиши адміністратору:</code> @dimbaida.',
                          parse_mode='HTML',
                          disable_notification=True)
 
@@ -57,29 +57,29 @@ def manage(message):
         if player.admin:
             keyboard = telebot.types.InlineKeyboardMarkup()
             for event in db.upcoming_events():
-                btn = telebot.types.InlineKeyboardButton(f"Изменить {event.icon} {event.date_formatted}",
+                btn = telebot.types.InlineKeyboardButton(f"Змінити {event.icon} {event.date_formatted}",
                                                          callback_data=f'MANAGE>>EVENT::{event.id}')
                 keyboard.row(btn)
-            btn_new = telebot.types.InlineKeyboardButton(f"Создать", callback_data=f'MANAGE>>CREATE::')
-            btn_exit = telebot.types.InlineKeyboardButton(f"Выйти", callback_data=f'EXIT::')
+            btn_new = telebot.types.InlineKeyboardButton(f"Створити", callback_data=f'MANAGE>>CREATE::')
+            btn_exit = telebot.types.InlineKeyboardButton(f"Вийти", callback_data=f'EXIT::')
             keyboard.row(btn_new)
             keyboard.row(btn_exit)
             bot.send_message(message.from_user.id,
-                             '<code>Следующие события:</code>',
+                             '<code>Наступні події:</code>',
                              parse_mode='HTML',
                              reply_markup=keyboard)
 
         else:
             print(f'[Error] Request from [{message.from_user.id}] — forbidden to manage, not an admin')
             bot.send_message(message.from_user.id,
-                             '<code>Эта секция доступна только пользователям с правами администратора.</code>',
+                             '<code>Ця секція доступна тільки користувачам з правами адміністратора.</code>',
                              parse_mode='HTML',
                              disable_notification=True)
 
     else:
         print(f'[Error] Request from [{message.from_user.id}] — unknown player')
         bot.send_message(message.from_user.id,
-                         '<code>Тебя нет в списке игроков. Бот не будет с тобой работать. Для того, чтобы тебя добавили, напиши администратору</code>',
+                         '<code>Тебе немає в списку гравців. Напиши адміністратору:</code> @dimbaida.',
                          parse_mode='HTML',
                          disable_notification=True)
 
@@ -99,11 +99,11 @@ def text(message):
                 btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
                 keyboard.row(btn)
                 bot.send_message(message.chat.id,
-                                 f"<code>Гостевой игрок — {guest_name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
+                                 f"<code>Гістьовий гравець — {guest_name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
                                  parse_mode='HTML',
                                  reply_markup=keyboard)
                 bot.send_message(config.telegram_group_id,
-                                 f"<code>{player.lastname} {player.name} добавил гостя {guest_name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
+                                 f"<code>{player.lastname} {player.name} додав гостя {guest_name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
                                  parse_mode='HTML')
                 player.purge_cache()
 
@@ -115,7 +115,7 @@ def text(message):
                 btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
                 keyboard.row(btn)
                 bot.send_message(message.chat.id,
-                                 f"<code>Новое имя гостя — {guest_name}</code>",
+                                 f"<code>Нове імʼя гостя — {guest_name}</code>",
                                  parse_mode='HTML',
                                  reply_markup=keyboard)
                 player.purge_cache()
@@ -128,14 +128,14 @@ def text(message):
                 btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'MANAGE::')
                 keyboard.row(btn)
                 bot.send_message(message.chat.id,
-                                 f'<code>Добавлено примечание {event.icon} {event.date_formatted}:\n"{note}"</code>',
+                                 f'<code>Додана примітка {event.icon} {event.date_formatted}:\n"{note}"</code>',
                                  parse_mode='HTML',
                                  reply_markup=keyboard)
                 player.purge_cache()
     else:
         print(f'[Error] Request from [{message.from_user.id}] — unknown player')
         bot.send_message(message.from_user.id,
-                         '<code>Тебя нет в списке игроков. Бот не будет с тобой работать. Для того, чтобы тебя добавили, напиши администратору</code>',
+                         '<code>Тебе немає в списку гравців. Напиши адміністратору:</code> @dimbaida.',
                          parse_mode='HTML',
                          disable_notification=True)
 
@@ -155,9 +155,9 @@ def callback_inline(call):
             btn = telebot.types.InlineKeyboardButton(f"{event.icon} {event.date_formatted}",
                                                      callback_data=f'LIST_EVENTS>>EVENT::{event.id}:')
             keyboard.row(btn)
-        btn_exit = telebot.types.InlineKeyboardButton(f"Выйти", callback_data=f'EXIT::')
+        btn_exit = telebot.types.InlineKeyboardButton(f"Вийти", callback_data=f'EXIT::')
         keyboard.row(btn_exit)
-        bot.edit_message_text('<code>Следующие события:</code>',
+        bot.edit_message_text('<code>Наступні події:</code>',
                               call.message.chat.id,
                               call.message.message_id,
                               parse_mode='HTML',
@@ -170,7 +170,7 @@ def callback_inline(call):
 
         btn_01 = telebot.types.InlineKeyboardButton('YES', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:yes')
         btn_02 = telebot.types.InlineKeyboardButton('NO', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:no')
-        btn_03 = telebot.types.InlineKeyboardButton('Гости', callback_data=f'LIST_EVENTS>>EVENT>>GUESTS::{event.id}')
+        btn_03 = telebot.types.InlineKeyboardButton('Гості', callback_data=f'LIST_EVENTS>>EVENT>>GUESTS::{event.id}')
         btn_back = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
         keyboard.row(btn_01, btn_02)
         if event.type == 'train':
@@ -217,21 +217,21 @@ def callback_inline(call):
             for guest in event.guests():
                 btn = telebot.types.InlineKeyboardButton(f"[Гость] {guest.name}", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>GUEST::{event.id}:{guest.id}')
                 keyboard.row(btn)
-            btn_new = telebot.types.InlineKeyboardButton(f"Добавить", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>INPUT_GUEST::{event.id}')
+            btn_new = telebot.types.InlineKeyboardButton(f"Додати", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>INPUT_GUEST::{event.id}')
             btn_back = telebot.types.InlineKeyboardButton(f"Назад", callback_data=f'LIST_EVENTS>>EVENT::{event.id}:')
             keyboard.row(btn_new)
             keyboard.row(btn_back)
-            bot.edit_message_text(f'<code>Гости на {event.icon} {event.date_formatted}:</code>',
+            bot.edit_message_text(f'<code>Гості на {event.icon} {event.date_formatted}:</code>',
                                   call.message.chat.id,
                                   call.message.message_id,
                                   parse_mode='HTML',
                                   reply_markup=keyboard)
         else:
-            btn_new = telebot.types.InlineKeyboardButton(f"Добавить", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>INPUT_GUEST::{event.id}')
+            btn_new = telebot.types.InlineKeyboardButton(f"Додати", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>INPUT_GUEST::{event.id}')
             btn_back = telebot.types.InlineKeyboardButton(f"Назад", callback_data=f'LIST_EVENTS>>EVENT::{event.id}:')
             keyboard.row(btn_new)
             keyboard.row(btn_back)
-            bot.edit_message_text(f'<code>{event.icon} {event.date_formatted}\nСписок гостей пуст</code>',
+            bot.edit_message_text(f'<code>{event.icon} {event.date_formatted}\nСписок гостей порожній</code>',
                                   call.message.chat.id,
                                   call.message.message_id,
                                   parse_mode='HTML',
@@ -242,12 +242,12 @@ def callback_inline(call):
         event = db.get_event_by_id(event_id)
         guest = db.get_guest_by_id(guest_id)
         keyboard = telebot.types.InlineKeyboardMarkup()
-        btn_01 = telebot.types.InlineKeyboardButton(f"Изменить имя", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>GUEST>>EDIT::{guest.id}')
-        btn_02 = telebot.types.InlineKeyboardButton(f"Удалить", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>GUEST>>DELETE::{guest.id}')
+        btn_01 = telebot.types.InlineKeyboardButton(f"Змінити імʼя", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>GUEST>>EDIT::{guest.id}')
+        btn_02 = telebot.types.InlineKeyboardButton(f"Видалити", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>GUEST>>DELETE::{guest.id}')
         btn_back = telebot.types.InlineKeyboardButton(f"Назад", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS::{event.id}')
         keyboard.row(btn_01, btn_02)
         keyboard.row(btn_back)
-        bot.edit_message_text(f"<code>[Гость] {guest.name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}:</code>",
+        bot.edit_message_text(f"<code>[Гість] {guest.name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}:</code>",
                               call.message.chat.id,
                               call.message.message_id,
                               parse_mode='HTML',
@@ -258,7 +258,7 @@ def callback_inline(call):
         player.write_cache(f'EDIT_GUEST::{guest.id}')
         bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
         bot.send_message(call.message.chat.id,
-                         f'<code>Введи новое имя гостя</code>',
+                         f'<code>Введи новое имʼя гостя</code>',
                          parse_mode='HTML',
                          reply_markup=telebot.types.ReplyKeyboardRemove())
 
@@ -272,17 +272,17 @@ def callback_inline(call):
             event = db.get_event_by_id(guest.event_id)
             guest.delete()
             bot.edit_message_text(
-                f"<code>Гость удален</code>",
+                f"<code>Гостя видалено</code>",
                 call.message.chat.id,
                 call.message.message_id,
                 parse_mode='HTML',
                 reply_markup=keyboard)
             bot.send_message(config.telegram_group_id,
-                             f"<code>{player.lastname} {player.name} удалил гостя {name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
+                             f"<code>{player.lastname} {player.name} видалив гостя {name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
                              parse_mode='HTML')
         else:
             bot.edit_message_text(
-                f"<code>Гостя может удалить только пригласивший его игрок или пользователь с правами администратора</code>",
+                f"<code>Гостя може видалити тільки гравець, що його запросив, або адміністратор</code>",
                 call.message.chat.id,
                 call.message.message_id,
                 parse_mode='HTML',
@@ -293,7 +293,7 @@ def callback_inline(call):
         player.write_cache(f'INPUT_GUEST::{event.id}')
         bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
         bot.send_message(call.message.chat.id,
-                         f'<code>Введи имя гостя для {event.icon} {event.date_formatted}</code>',
+                         f'<code>Введи имʼя гостя для {event.icon} {event.date_formatted}</code>',
                          parse_mode='HTML',
                          reply_markup=telebot.types.ReplyKeyboardRemove())
 
@@ -302,13 +302,13 @@ def callback_inline(call):
     if command == 'MANAGE':
         keyboard = telebot.types.InlineKeyboardMarkup()
         for event in db.upcoming_events():
-            btn = telebot.types.InlineKeyboardButton(f"Изменить {event.icon} {event.date_formatted}", callback_data=f'MANAGE>>EVENT::{event.id}')
+            btn = telebot.types.InlineKeyboardButton(f"Змінити {event.icon} {event.date_formatted}", callback_data=f'MANAGE>>EVENT::{event.id}')
             keyboard.row(btn)
-        btn_new = telebot.types.InlineKeyboardButton(f"Создать", callback_data=f'MANAGE>>CREATE::')
-        btn_exit = telebot.types.InlineKeyboardButton(f"Выйти", callback_data=f'EXIT::')
+        btn_new = telebot.types.InlineKeyboardButton(f"Створити", callback_data=f'MANAGE>>CREATE::')
+        btn_exit = telebot.types.InlineKeyboardButton(f"Вийти", callback_data=f'EXIT::')
         keyboard.row(btn_new)
         keyboard.row(btn_exit)
-        bot.edit_message_text('<code>Следующие события:</code>',
+        bot.edit_message_text('<code>Наступні події:</code>',
                               call.message.chat.id,
                               call.message.message_id,
                               parse_mode='HTML',
@@ -317,9 +317,9 @@ def callback_inline(call):
     if command == 'MANAGE>>EVENT':
         event = db.get_event_by_id(data)
         keyboard = telebot.types.InlineKeyboardMarkup()
-        btn_01 = telebot.types.InlineKeyboardButton(f"Изменить тип", callback_data=f'MANAGE>>EVENT>>SWITCH_TYPE::{event.id}')
-        btn_02 = telebot.types.InlineKeyboardButton(f"Добавить примечание", callback_data=f'MANAGE>>EVENT>>INPUT_NOTE::{event.id}')
-        btn_03 = telebot.types.InlineKeyboardButton(f"Удалить", callback_data=f'MANAGE>>EVENT>>DELETE::{event.id}')
+        btn_01 = telebot.types.InlineKeyboardButton(f"Змінити тип", callback_data=f'MANAGE>>EVENT>>SWITCH_TYPE::{event.id}')
+        btn_02 = telebot.types.InlineKeyboardButton(f"Додати примітку", callback_data=f'MANAGE>>EVENT>>INPUT_NOTE::{event.id}')
+        btn_03 = telebot.types.InlineKeyboardButton(f"Видалити", callback_data=f'MANAGE>>EVENT>>DELETE::{event.id}')
         btn_04 = telebot.types.InlineKeyboardButton(f"Назад", callback_data=f'MANAGE::')
         keyboard.row(btn_01)
         keyboard.row(btn_02)
@@ -338,13 +338,13 @@ def callback_inline(call):
         keyboard = telebot.types.InlineKeyboardMarkup()
         btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'MANAGE>>EVENT::{event.id}')
         keyboard.row(btn)
-        bot.edit_message_text(f"<code>Тип события изменен {old_icon} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
+        bot.edit_message_text(f"<code>Тип події змінено {old_icon} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
                               call.message.chat.id,
                               call.message.message_id,
                               parse_mode='HTML',
                               reply_markup=keyboard)
         bot.send_message(config.telegram_group_id,
-                         f"<code>{player.name} {player.lastname} изменил {old_icon} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
+                         f"<code>{player.name} {player.lastname} змінив {old_icon} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
                          parse_mode='HTML')
 
     if command == 'MANAGE>>EVENT>>INPUT_NOTE':
@@ -352,19 +352,19 @@ def callback_inline(call):
         player.write_cache(f'INPUT_NOTE::{event.id}')
         bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
         bot.send_message(call.message.chat.id,
-                         f'<code>Введи примечание для {event.icon} {event.date_formatted}</code>',
+                         f'<code>Введи примітку для {event.icon} {event.date_formatted}</code>',
                          parse_mode='HTML',
                          reply_markup=telebot.types.ReplyKeyboardRemove())
 
     if command == 'MANAGE>>EVENT>>DELETE':
         event = db.get_event_by_id(data)
         keyboard = telebot.types.InlineKeyboardMarkup()
-        btn_01 = telebot.types.InlineKeyboardButton('Да',
+        btn_01 = telebot.types.InlineKeyboardButton('Так',
                                                     callback_data=f'MANAGE>>EVENT>>DELETE>>CONFIRMED::{event.id}')
         btn_02 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'MANAGE>>EVENT::{event.id}')
         keyboard.row(btn_01, btn_02)
         bot.edit_message_text(
-            f'<code>УВЕРЕН? Все данные о событии будут стерты! {event.icon} {event.date_formatted}</code>',
+            f'<code>ВПЕВНЕНИЙ? Всі дані про подію будуть видалені! {event.icon} {event.date_formatted}</code>',
             call.message.chat.id,
             call.message.message_id,
             parse_mode='HTML',
@@ -374,19 +374,19 @@ def callback_inline(call):
         event = db.get_event_by_id(data)
         keyboard = telebot.types.InlineKeyboardMarkup()
         btn_01 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'MANAGE::')
-        btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
+        btn_02 = telebot.types.InlineKeyboardButton('Вийти', callback_data=f'EXIT::')
         keyboard.row(btn_01)
         keyboard.row(btn_02)
         event.delete()
         print(f'[INFO] Event {event.date} was deleted by {player.lastname} {player.name}')
-        bot.edit_message_text(f'<code>Событие {event.icon} {event.date_formatted} удалено</code>',
+        bot.edit_message_text(f'<code>Подія {event.icon} {event.date_formatted} видалена</code>',
                               call.message.chat.id,
                               call.message.message_id,
                               parse_mode='HTML',
                               reply_markup=keyboard)
 
     if command == 'MANAGE>>CREATE':
-        bot.edit_message_text(f'<code>Год:</code>',
+        bot.edit_message_text(f'<code>Рік:</code>',
                               call.message.chat.id,
                               call.message.message_id,
                               parse_mode='HTML',
@@ -394,7 +394,7 @@ def callback_inline(call):
 
     if command == 'MANAGE>>CREATE>>MONTH':
         year = data
-        bot.edit_message_text(f'<code>Месяц:</code>',
+        bot.edit_message_text(f'<code>Місяць:</code>',
                               call.message.chat.id,
                               call.message.message_id,
                               parse_mode='HTML',
@@ -413,12 +413,12 @@ def callback_inline(call):
         year, month, day = date.split('-')
         if day.isdigit() and datetime.strptime(date, '%Y-%m-%d') >= datetime.today():
             keyboard = telebot.types.InlineKeyboardMarkup()
-            btn_01 = telebot.types.InlineKeyboardButton('Тренировка', callback_data=f'MANAGE>>CREATE>>MONTH>>DAY>>DATE>>CREATE::{date}:train')
-            btn_02 = telebot.types.InlineKeyboardButton('Игра', callback_data=f'MANAGE>>CREATE>>MONTH>>DAY>>DATE>>CREATE::{date}:game')
+            btn_01 = telebot.types.InlineKeyboardButton('Тренування', callback_data=f'MANAGE>>CREATE>>MONTH>>DAY>>DATE>>CREATE::{date}:train')
+            btn_02 = telebot.types.InlineKeyboardButton('Гра', callback_data=f'MANAGE>>CREATE>>MONTH>>DAY>>DATE>>CREATE::{date}:game')
             btn_back = telebot.types.InlineKeyboardButton('Назад', callback_data="MANAGE::")
             keyboard.row(btn_01, btn_02)
             keyboard.row(btn_back)
-            bot.edit_message_text(f'<code>Выбери тип события:</code>',
+            bot.edit_message_text(f'<code>Вибери тип події:</code>',
                                   call.message.chat.id,
                                   call.message.message_id,
                                   parse_mode='HTML',
@@ -427,7 +427,7 @@ def callback_inline(call):
             keyboard = telebot.types.InlineKeyboardMarkup()
             btn_back = telebot.types.InlineKeyboardButton('Назад', callback_data="MANAGE::")
             keyboard.add(btn_back)
-            bot.edit_message_text(f'<code>Неправильная дата</code>',
+            bot.edit_message_text(f'<code>Неправильна дата</code>',
                                   call.message.chat.id,
                                   call.message.message_id,
                                   parse_mode='HTML',
@@ -437,18 +437,18 @@ def callback_inline(call):
         date, event_type = data.split(':')
         keyboard = telebot.types.InlineKeyboardMarkup()
         btn_01 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'MANAGE::')
-        btn_02 = telebot.types.InlineKeyboardButton('Выйти', callback_data=f'EXIT::')
+        btn_02 = telebot.types.InlineKeyboardButton('Вийти', callback_data=f'EXIT::')
         keyboard.row(btn_01)
         keyboard.row(btn_02)
         event = db.create_event(date, event_type)
         print(f'[INFO] Event {event.date} was created by {player.lastname} {player.name}')
-        bot.edit_message_text(f'<code>Событие создано: {event.icon} {event.date_formatted}</code>',
+        bot.edit_message_text(f'<code>Подію створено: {event.icon} {event.date_formatted}</code>',
                               call.message.chat.id,
                               call.message.message_id,
                               parse_mode='HTML',
                               reply_markup=keyboard)
         bot.send_message(config.telegram_group_id,
-                         f"<code>{player.lastname} {player.name} создал {event.icon} {event.date_formatted}</code>",
+                         f"<code>{player.lastname} {player.name} створив {event.icon} {event.date_formatted}</code>",
                          parse_mode='HTML')
 
     # GENERAL

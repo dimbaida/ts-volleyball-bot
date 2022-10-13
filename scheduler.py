@@ -22,7 +22,7 @@ def send_event_reminder() -> None:
         for player in players:
             if player.check_attendance(event.date) is None:
                 print(f'[INFO] Sending reminder on {event.date} to {player.name} {player.lastname}')
-                event_text = f"Напоминание: {event.icon} {event.date_formatted}"
+                event_text = f"Нагадувння: {event.icon} {event.date_formatted}"
                 if event.note:
                     event_text += f"\n{event.note}"
                 bot.send_message(player.telegram_id,
@@ -43,6 +43,6 @@ def send_birthday_reminder() -> None:
         if player.birthdate.month == today.month and player.birthdate.day == today.day:
             print("[INFO] Date match. Sending to chat")
             bot.send_message(config.telegram_group_id,
-                             f"<code>{player.name} {player.lastname} празднует сегодня день рождения! {ICONS['party']}</code>",
+                             f"<code>{player.name} {player.lastname} стогодні святкує свій день народження! {ICONS['party']}</code>",
                              parse_mode='HTML')
     print(f"[INFO] Birthdays check finished")

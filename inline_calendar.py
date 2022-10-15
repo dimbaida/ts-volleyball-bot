@@ -14,9 +14,7 @@ def keyboard_years(command: str) -> types.InlineKeyboardMarkup():
     year_curr = datetime.datetime.today().year
     btn_year_curr = types.InlineKeyboardButton(year_curr, callback_data=f'{command}>>MONTH::{year_curr}')
     btn_year_next = types.InlineKeyboardButton(year_curr + 1, callback_data=f'{command}>>MONTH::{year_curr + 1}')
-    # btn_back = types.InlineKeyboardButton('Назад', callback_data=f"{'>>'.join(command.split('>>')[:-1])}::")
     keyboard.row(btn_year_curr, btn_year_next)
-    # keyboard.row(btn_back)
     return keyboard
 
 
@@ -40,11 +38,9 @@ def keyboard_months(command: str, year:str) -> types.InlineKeyboardMarkup():
     btn_oct = types.InlineKeyboardButton('OCT', callback_data=f"{command}>>DAY::{year}-10")
     btn_nov = types.InlineKeyboardButton('NOV', callback_data=f"{command}>>DAY::{year}-11")
     btn_dec = types.InlineKeyboardButton('DEC', callback_data=f"{command}>>DAY::{year}-12")
-    # btn_back = types.InlineKeyboardButton('Назад', callback_data=f"{'>>'.join(command.split('>>')[:-1])}::")
     keyboard.row(btn_jan, btn_feb, btn_mar, btn_apr)
     keyboard.row(btn_may, btn_jun, btn_jul, btn_aug)
     keyboard.row(btn_sep, btn_oct, btn_nov, btn_dec)
-    # keyboard.row(btn_back)
     return keyboard
 
 
@@ -61,8 +57,6 @@ def keyboard_days(command, year, month) -> types.InlineKeyboardMarkup():
     for i in range(32 - len(days)):
         days.append('.')
     days_btns = Keyboa(items=days, items_in_row=8, front_marker=f"{command}>>DATE::{year}-{month}-")
-    # btn_back = types.InlineKeyboardButton('Назад', callback_data=f"{'>>'.join(command.split('>>')[:-1])}::{year}")
     keyboard = days_btns.keyboard
-    # keyboard.row(btn_back)
     return keyboard
 

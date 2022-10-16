@@ -99,7 +99,7 @@ def text(message):
                 btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
                 keyboard.row(btn)
                 bot.send_message(message.chat.id,
-                                 f"<code>Гістьовий гравець — {guest_name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
+                                 f"<code>Гостьовий гравець — {guest_name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
                                  parse_mode='HTML',
                                  reply_markup=keyboard)
                 bot.send_message(config.telegram_group_id,
@@ -115,7 +115,7 @@ def text(message):
                 btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
                 keyboard.row(btn)
                 bot.send_message(message.chat.id,
-                                 f"<code>Нове імʼя гостя — {guest_name}</code>",
+                                 f"<code>Нове ім'я гостя — {guest_name}</code>",
                                  parse_mode='HTML',
                                  reply_markup=keyboard)
                 player.purge_cache()
@@ -144,7 +144,7 @@ def text(message):
 def callback_inline(call):
     player = db.get_player_by_telegram_id(call.message.chat.id)
     player.purge_cache()
-    print(f'{player.name} {player.lastname} callback', call.data)
+    print(f'player <{player.id}> callback', call.data)
     command, data = call.data.split('::')
 
     # COMMON SECTION
@@ -179,7 +179,7 @@ def callback_inline(call):
 
         if item == 'yes':
             att = player.check_attendance(event.date)
-            if att == False or att is None:
+            if att is False or att is None:
                 player.set_decision(event.date, True)
                 bot.send_message(config.telegram_group_id,
                                  f"<code>{player.lastname} {player.name} {ICONS['right_arrow']} {event.icon} {event.date_formatted} {ICONS['yes']}</code>",
@@ -188,7 +188,7 @@ def callback_inline(call):
 
         if item == 'no':
             att = player.check_attendance(event.date)
-            if att == True or att is None:
+            if att is True or att is None:
                 player.set_decision(event.date, False)
                 bot.send_message(config.telegram_group_id,
                                  f"<code>{player.lastname} {player.name} {ICONS['right_arrow']} {event.icon} {event.date_formatted} {ICONS['no']}</code>",
@@ -207,7 +207,7 @@ def callback_inline(call):
                                   parse_mode='HTML',
                                   reply_markup=keyboard)
         except:
-            pass
+            print(f'[ERROR] Failed to edit message: {call.message.message_id}')
 
     if command == 'LIST_EVENTS>>EVENT>>GUESTS':
         event = db.get_event_by_id(data)
@@ -215,7 +215,7 @@ def callback_inline(call):
         guests = event.guests()
         if guests:
             for guest in event.guests():
-                btn = telebot.types.InlineKeyboardButton(f"[Гость] {guest.name}", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>GUEST::{event.id}:{guest.id}')
+                btn = telebot.types.InlineKeyboardButton(f"[Гість] {guest.name}", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>GUEST::{event.id}:{guest.id}')
                 keyboard.row(btn)
             btn_new = telebot.types.InlineKeyboardButton(f"Додати", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>INPUT_GUEST::{event.id}')
             btn_back = telebot.types.InlineKeyboardButton(f"Назад", callback_data=f'LIST_EVENTS>>EVENT::{event.id}:')
@@ -242,7 +242,7 @@ def callback_inline(call):
         event = db.get_event_by_id(event_id)
         guest = db.get_guest_by_id(guest_id)
         keyboard = telebot.types.InlineKeyboardMarkup()
-        btn_01 = telebot.types.InlineKeyboardButton(f"Змінити імʼя", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>GUEST>>EDIT::{guest.id}')
+        btn_01 = telebot.types.InlineKeyboardButton(f"Змінити ім'я", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>GUEST>>EDIT::{guest.id}')
         btn_02 = telebot.types.InlineKeyboardButton(f"Видалити", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>GUEST>>DELETE::{guest.id}')
         btn_back = telebot.types.InlineKeyboardButton(f"Назад", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS::{event.id}')
         keyboard.row(btn_01, btn_02)
@@ -258,7 +258,7 @@ def callback_inline(call):
         player.write_cache(f'EDIT_GUEST::{guest.id}')
         bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
         bot.send_message(call.message.chat.id,
-                         f'<code>Введи новое имʼя гостя</code>',
+                         f"<code>Введи нове ім'я гостя</code>",
                          parse_mode='HTML',
                          reply_markup=telebot.types.ReplyKeyboardRemove())
 
@@ -293,7 +293,7 @@ def callback_inline(call):
         player.write_cache(f'INPUT_GUEST::{event.id}')
         bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
         bot.send_message(call.message.chat.id,
-                         f'<code>Введи имʼя гостя для {event.icon} {event.date_formatted}</code>',
+                         f"<code>Введи ім'я гостя для {event.icon} {event.date_formatted}</code>",
                          parse_mode='HTML',
                          reply_markup=telebot.types.ReplyKeyboardRemove())
 
@@ -378,7 +378,7 @@ def callback_inline(call):
         keyboard.row(btn_01)
         keyboard.row(btn_02)
         event.delete()
-        print(f'[INFO] Event {event.date} was deleted by {player.lastname} {player.name}')
+        print(f'[INFO] Event <{event.id}> was deleted by player <{player.id}>')
         bot.edit_message_text(f'<code>Подія {event.icon} {event.date_formatted} видалена</code>',
                               call.message.chat.id,
                               call.message.message_id,
@@ -441,7 +441,7 @@ def callback_inline(call):
         keyboard.row(btn_01)
         keyboard.row(btn_02)
         event = db.create_event(date, event_type)
-        print(f'[INFO] Event {event.date} was created by {player.lastname} {player.name}')
+        print(f'[INFO] Event <{event.id}> of type <{event.type}> was created by <{player.id}>')
         bot.edit_message_text(f'<code>Подію створено: {event.icon} {event.date_formatted}</code>',
                               call.message.chat.id,
                               call.message.message_id,

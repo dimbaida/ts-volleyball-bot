@@ -168,8 +168,8 @@ def callback_inline(call):
         event = db.get_event_by_id(event_id)
         keyboard = telebot.types.InlineKeyboardMarkup()
 
-        btn_01 = telebot.types.InlineKeyboardButton('YES', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:yes')
-        btn_02 = telebot.types.InlineKeyboardButton('NO', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:no')
+        btn_01 = telebot.types.InlineKeyboardButton('ТАК', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:yes')
+        btn_02 = telebot.types.InlineKeyboardButton('НІ', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:no')
         btn_03 = telebot.types.InlineKeyboardButton('Гості', callback_data=f'LIST_EVENTS>>EVENT>>GUESTS::{event.id}')
         btn_back = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
         keyboard.row(btn_01, btn_02)
@@ -206,8 +206,8 @@ def callback_inline(call):
                                   call.message.message_id,
                                   parse_mode='HTML',
                                   reply_markup=keyboard)
-        except:
-            print(f'[ERROR] Failed to edit message: {call.message.message_id}')
+        except telebot.apihelper.ApiTelegramException as e:
+            print(f'[ERROR] {e}')
 
     if command == 'LIST_EVENTS>>EVENT>>GUESTS':
         event = db.get_event_by_id(data)

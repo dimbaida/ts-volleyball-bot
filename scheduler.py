@@ -14,8 +14,8 @@ def send_event_reminder() -> None:
     if events:
         event = events[0]
         keyboard = telebot.types.InlineKeyboardMarkup()
-        btn_01 = telebot.types.InlineKeyboardButton('YES', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:yes')
-        btn_02 = telebot.types.InlineKeyboardButton('NO', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:no')
+        btn_01 = telebot.types.InlineKeyboardButton('ТАК', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:yes')
+        btn_02 = telebot.types.InlineKeyboardButton('НІ', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:no')
         keyboard.row(btn_01, btn_02)
         players = db.get_active_players()
         bot = telebot.TeleBot(config.bot_token)

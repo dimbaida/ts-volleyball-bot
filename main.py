@@ -144,7 +144,7 @@ def text(message):
 def callback_inline(call):
     player = db.get_player_by_telegram_id(call.message.chat.id)
     player.purge_cache()
-    print(f'player <{player.id}> callback', call.data)
+    print(f'<{player.id}> {player.lastname} {player.name} callback {call.data}')
     command, data = call.data.split('::')
 
     # COMMON SECTION
@@ -378,7 +378,7 @@ def callback_inline(call):
         keyboard.row(btn_01)
         keyboard.row(btn_02)
         event.delete()
-        print(f'[INFO] Event <{event.id}> was deleted by player <{player.id}>')
+        print(f'[INFO] Event {event.date_formatted} <{event.id}> was deleted by player <{player.id}> {player.lastname} {player.name}')
         bot.edit_message_text(f'<code>Подія {event.icon} {event.date_formatted} видалена</code>',
                               call.message.chat.id,
                               call.message.message_id,
@@ -441,7 +441,7 @@ def callback_inline(call):
         keyboard.row(btn_01)
         keyboard.row(btn_02)
         event = db.create_event(date, event_type)
-        print(f'[INFO] Event <{event.id}> of type <{event.type}> was created by <{player.id}>')
+        print(f'[INFO] Event {event.date_formatted} <{event.id}> <{event.type}> was created by <{player.id}> {player.lastname} {player.name}')
         bot.edit_message_text(f'<code>Подію створено: {event.icon} {event.date_formatted}</code>',
                               call.message.chat.id,
                               call.message.message_id,

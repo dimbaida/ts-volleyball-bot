@@ -820,7 +820,7 @@ def get_all_players() -> list:
         print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
 
 
-def create_event(event_date: str, event_type: str) -> Event:
+def create_event(event_date: str, event_type: str, created_by: int) -> Event:
     """
     Creates a new event
     :param event_date: date in string format yyyy-mm-dd
@@ -838,8 +838,8 @@ def create_event(event_date: str, event_type: str) -> Event:
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""
-                    insert into events(date, type)
-                    values('{event_date}', '{event_type}')
+                    insert into events(date, type, created_by, timestamp)
+                    values('{event_date}', '{event_type}', {created_by}, CURRENT_TIMESTAMP)
                     on conflict (date) do update
                         set type = '{event_type}';
 

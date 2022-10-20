@@ -440,7 +440,7 @@ def callback_inline(call):
         btn_02 = telebot.types.InlineKeyboardButton('Вийти', callback_data=f'EXIT::')
         keyboard.row(btn_01)
         keyboard.row(btn_02)
-        event = db.create_event(date, event_type)
+        event = db.create_event(date, event_type, player.id)
         print(f'[INFO] Event {event.date_formatted} <{event.id}> <{event.type}> was created by <{player.id}> {player.lastname} {player.name}')
         bot.edit_message_text(f'<code>Подію створено: {event.icon} {event.date_formatted}</code>',
                               call.message.chat.id,

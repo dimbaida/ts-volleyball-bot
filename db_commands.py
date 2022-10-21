@@ -44,9 +44,9 @@ class Player:
                     f"""  
                             select decision from attendance
                             where 
-                                player_id = {self.id}
+                                player = {self.id}
                             and 
-                                event_id = (select id from events where date = '{event_date}')
+                                event = (select id from events where date = '{event_date}')
                         """)
                 decision = cursor.fetchall()
 
@@ -78,14 +78,14 @@ class Player:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""
-                        insert into attendance(player_id, event_id, decision, timestamp)
+                        insert into attendance(player, event, decision, timestamp)
                             values(
                                 (select id from players where telegram_id = {self.telegram_id}),
                                 (select id from events where date = '{event_date}'),
                                 {decision},
                                 CURRENT_TIMESTAMP
                             )
-                        on conflict (player_id, event_id) do update
+                        on conflict (player, event) do update
                             set decision = {decision}, timestamp = CURRENT_TIMESTAMP
                     """)
             print(f"[PostgreSQL INFO]: {self.name} {self.lastname} inserted values into 'attendance': {event_date}, {decision}")
@@ -272,8 +272,8 @@ class Event:
                                 players.admin,
                                 players.cache
                         from attendance
-                        join players on players.id = attendance.player_id
-                        where attendance.event_id = (select id from events where date = '{self.date}')
+                        join players on players.id = attendance.player
+                        where attendance.event = (select id from events where date = '{self.date}')
                         order by attendance.timestamp asc
                     """)
                 players_data = cursor.fetchall()
@@ -311,8 +311,8 @@ class Event:
                 cursor.execute(
                     f"""
                         select  p.name, p.lastname, a.decision from players p
-                        left join attendance a on p.id = a.player_id 
-                            and a.event_id = (select e.id from events e where e.date = '{self.date}')
+                        left join attendance a on p.id = a.player 
+                            and a.event = (select e.id from events e where e.date = '{self.date}')
                         where p.active
                         order by a.timestamp asc
                     """)
@@ -321,7 +321,7 @@ class Event:
                 cursor.execute(
                     f"""
                         select name from guests
-                        where event_id = {self.id}
+                        where event = {self.id}
                         order by timestamp asc
                     """)
                 guests = cursor.fetchall()
@@ -390,8 +390,8 @@ class Event:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""  
-                        delete from attendance * where event_id = {self.id};
-                        delete from guests * where event_id = {self.id};
+                        delete from attendance * where event = {self.id};
+                        delete from guests * where event = {self.id};
                         delete from events * where date = '{self.date}';
                     """)
 
@@ -444,7 +444,7 @@ class Event:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""
-                        insert into guests(event_id, name, added_by, timestamp)
+                        insert into guests(event, name, added_by, timestamp)
                         values({self.id}, '{guest_name}', {player.id}, CURRENT_TIMESTAMP)
                     """)
             print(f"[PostgreSQL INFO]: Guest {guest_name} was added to {self.date} by {player.lastname} {player.name}")
@@ -470,9 +470,9 @@ class Event:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""  
-                        select id, name, event_id, added_by
+                        select id, name, event, added_by
                         from guests
-                        where event_id = '{self.id}'
+                        where event = '{self.id}'
                         order by timestamp asc
                     """)
                 guests_data = cursor.fetchall()
@@ -631,7 +631,7 @@ def get_guest_by_id(guest_id: int) -> Guest:
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""  
-                    select id, name, event_id, added_by from guests where id='{guest_id}'
+                    select id, name, event, added_by from guests where id='{guest_id}'
                 """)
             guest = cursor.fetchall()
             guest_id = guest[0][0]

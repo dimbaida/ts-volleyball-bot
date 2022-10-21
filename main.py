@@ -54,7 +54,7 @@ def start(message):
 def manage(message):
     if db.check_player(message.from_user.id):
         player = db.get_player_by_telegram_id(message.from_user.id)
-        if player.admin:
+        if player.is_admin:
             keyboard = telebot.types.InlineKeyboardMarkup()
             for event in db.upcoming_events():
                 btn = telebot.types.InlineKeyboardButton(f"Змінити {event.icon} {event.date_formatted}",
@@ -267,7 +267,7 @@ def callback_inline(call):
         keyboard = telebot.types.InlineKeyboardMarkup()
         btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
         keyboard.row(btn)
-        if guest.added_by == call.message.chat.id or player.admin:
+        if guest.added_by == call.message.chat.id or player.is_admin:
             name = guest.name
             event = db.get_event_by_id(guest.event_id)
             guest.delete()

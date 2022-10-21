@@ -13,8 +13,8 @@ class Player:
                  birthdate: datetime.datetime,
                  email: str,
                  mobile: str,
-                 active: bool,
-                 admin: bool):
+                 is_active: bool,
+                 is_admin: bool):
         self.id: int = player_id
         self.name: str = name
         self.lastname: str = lastname
@@ -22,8 +22,8 @@ class Player:
         self.birthdate: datetime.datetime = birthdate
         self.email: str = email
         self.mobile: str = mobile
-        self.active: bool = active
-        self.admin: bool = admin
+        self.is_active: bool = is_active
+        self.is_admin: bool = is_admin
 
     def check_attendance(self, event_date: datetime.datetime) -> bool or None:
         """
@@ -42,11 +42,11 @@ class Player:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""  
-                            select decision from attendance
-                            where 
+                            SELECT decision FROM attendance
+                            WHERE 
                                 player = {self.id}
-                            and 
-                                event = (select id from events where date = '{event_date}')
+                            AND 
+                                event = (SELECT id FROM events WHERE date = '{event_date}')
                         """)
                 decision = cursor.fetchall()
 
@@ -59,7 +59,7 @@ class Player:
                 return None
 
         except psycopg2.Error as e:
-            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
     def set_decision(self, event_date: datetime.datetime, decision: bool) -> None:
         """
@@ -78,23 +78,23 @@ class Player:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""
-                        insert into attendance(player, event, decision, timestamp)
-                            values(
-                                (select id from players where telegram_id = {self.telegram_id}),
-                                (select id from events where date = '{event_date}'),
+                        INSERT INTO attendance(player, event, decision, timestamp)
+                            VALUES(
+                                (SELECT id FROM players WHERE telegram_id = {self.telegram_id}),
+                                (SELECT id FROM events WHERE date = '{event_date}'),
                                 {decision},
                                 CURRENT_TIMESTAMP
                             )
-                        on conflict (player, event) do update
-                            set decision = {decision}, timestamp = CURRENT_TIMESTAMP
+                        ON CONFLICT (player, event) DO UPDATE
+                            SET decision = {decision}, timestamp = CURRENT_TIMESTAMP
                     """)
-            print(f"[PostgreSQL INFO]: {self.name} {self.lastname} inserted values into 'attendance': {event_date}, {decision}")
+            print(f"[PSQL INFO]: {self.name} {self.lastname} inserted values into 'attendance': {event_date}, {decision}")
 
             if connection:
                 connection.close()
 
         except psycopg2.Error as e:
-            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
     def write_cache(self, cache: str) -> None:
         """
@@ -118,7 +118,7 @@ class Player:
             if connection:
                 connection.close()
         except psycopg2.Error as e:
-            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
     def read_cache(self) -> str:
         """
@@ -136,8 +136,8 @@ class Player:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""
-                        select cache from players
-                        where id = {self.id};
+                        SELECT cache FROM players
+                        WHERE id = {self.id};
                     """)
                 cache = cursor.fetchall()
             if connection:
@@ -145,7 +145,7 @@ class Player:
             return cache[0][0]
 
         except psycopg2.Error as e:
-            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
     def purge_cache(self) -> None:
         """
@@ -162,15 +162,15 @@ class Player:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""
-                        update players
-                        set cache = null
-                        where id = {self.id};
+                        UPDATE players
+                        SET cache = null
+                        WHERE id = {self.id};
                     """)
             if connection:
                 connection.close()
 
         except psycopg2.Error as e:
-            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
 
 class Guest:
@@ -200,13 +200,13 @@ class Guest:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""
-                       update guests set name = '{name}'
-                       where id = {self.id}
+                       UPDATE guests SET name = '{name}'
+                       WHERE id = {self.id}
                     """)
             if connection:
                 connection.close()
         except psycopg2.Error as e:
-            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
     def delete(self):
         """
@@ -223,14 +223,14 @@ class Guest:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""  
-                        delete from guests * where id = {self.id};
+                        DELETE FROM guests * WHERE id = {self.id};
                     """)
 
             if connection:
                 connection.close()
 
         except psycopg2.Error as e:
-            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
 
 class Event:
@@ -241,9 +241,9 @@ class Event:
                  note: str):
         self.id: int = event_id
         self.date: datetime.datetime = date
-        self.date_formatted: str = date.strftime("%d.%m.%Y")
+        self.date_formatted: str = self.date.strftime("%d.%m.%Y")
         self.type: str = event_type
-        self.icon: str = ICONS[event_type]
+        self.icon: str = ICONS[self.type]
         self.note: str = note
 
     def players(self) -> list:
@@ -261,20 +261,20 @@ class Event:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""  
-                        select  players.id,
-                                players.name, 
-                                players.lastname,
-                                players.telegram_id,
-                                players.birthdate,
-                                players.email,
-                                players.mobile,
-                                players.active,
-                                players.admin,
-                                players.cache
-                        from attendance
-                        join players on players.id = attendance.player
-                        where attendance.event = (select id from events where date = '{self.date}')
-                        order by attendance.timestamp asc
+                        SELECT players.id,
+                               players.name, 
+                               players.lastname,
+                               players.telegram_id,
+                               players.birthdate,
+                               players.email,
+                               players.mobile,
+                               players.active,
+                               players.admin,
+                               players.cache
+                        FROM attendance
+                        JOIN players ON players.id = attendance.player
+                        WHERE attendance.event = (SELECT id FROM events WHERE date = '{self.date}')
+                        ORDER BY attendance.timestamp ASC
                     """)
                 players_data = cursor.fetchall()
                 players = []
@@ -286,13 +286,13 @@ class Event:
                                           birthdate=player[4],
                                           email=player[5],
                                           mobile=player[6],
-                                          active=player[7],
-                                          admin=player[8]))
+                                          is_active=player[7],
+                                          is_admin=player[8]))
             if connection:
                 connection.close()
             return players
         except psycopg2.Error as e:
-            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
     def players_formatted(self) -> str:
         """
@@ -310,19 +310,19 @@ class Event:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""
-                        select  p.name, p.lastname, a.decision from players p
-                        left join attendance a on p.id = a.player 
-                            and a.event = (select e.id from events e where e.date = '{self.date}')
-                        where p.active
-                        order by a.timestamp asc
+                        SELECT p.name, p.lastname, a.decision FROM players p
+                        LEFT JOIN attendance a ON p.id = a.player 
+                            AND a.event = (SELECT e.id FROM events e WHERE e.date = '{self.date}')
+                        WHERE p.active
+                        ORDER BY a.timestamp ASC
                     """)
                 players = cursor.fetchall()
 
                 cursor.execute(
                     f"""
-                        select name from guests
-                        where event = {self.id}
-                        order by timestamp asc
+                        SELECT name FROM guests
+                        WHERE event = {self.id}
+                        ORDER BY timestamp ASC
                     """)
                 guests = cursor.fetchall()
 
@@ -338,10 +338,10 @@ class Event:
                 num_no: int = 1
                 num_none: int = 1
                 for player in players:
-                    if player[2] == True:
+                    if player[2] is True:
                         players_yes += f'\n{num_yes}. {player[1]} {player[0]}'
                         num_yes += 1
-                    elif player[2] == False:
+                    elif player[2] is False:
                         players_no += f'\n{num_no}. {player[1]} {player[0]}'
                         num_no += 1
                     elif player[2] is None:
@@ -373,7 +373,7 @@ class Event:
             return text
 
         except psycopg2.Error as e:
-            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
     def delete(self):
         """
@@ -390,16 +390,16 @@ class Event:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""  
-                        delete from attendance * where event = {self.id};
-                        delete from guests * where event = {self.id};
-                        delete from events * where date = '{self.date}';
+                        DELETE FROM attendance * WHERE event = {self.id};
+                        DELETE FROM guests * WHERE event = {self.id};
+                        DELETE FROM events * WHERE id = {self.id};
                     """)
 
             if connection:
                 connection.close()
 
         except psycopg2.Error as e:
-            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
     def switch_type(self):
         """
@@ -416,14 +416,14 @@ class Event:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""  
-                        update events
-                        set type = '{new_type}'
-                        where id = {self.id}
+                        UPDATE events
+                        SET type = '{new_type}'
+                        WHERE id = {self.id}
                     """)
             if connection:
                 connection.close()
         except psycopg2.Error as e:
-            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
         self.type = new_type
         self.icon = ICONS[self.type]
 
@@ -444,16 +444,16 @@ class Event:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""
-                        insert into guests(event, name, added_by, timestamp)
-                        values({self.id}, '{guest_name}', {player.id}, CURRENT_TIMESTAMP)
+                        INSERT INTO guests(event, name, added_by, timestamp)
+                        VALUES({self.id}, '{guest_name}', {player.id}, CURRENT_TIMESTAMP)
                     """)
-            print(f"[PostgreSQL INFO]: Guest {guest_name} was added to {self.date} by {player.lastname} {player.name}")
+            print(f"[PSQL INFO]: Guest {guest_name} was added to {self.date} by {player.lastname} {player.name}")
 
             if connection:
                 connection.close()
 
         except psycopg2.Error as e:
-            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
     def guests(self) -> list:
         """
@@ -470,10 +470,10 @@ class Event:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""  
-                        select id, name, event, added_by
-                        from guests
-                        where event = '{self.id}'
-                        order by timestamp asc
+                        SELECT id, name, event, added_by
+                        FROM guests
+                        WHERE event = '{self.id}'
+                        ORDER BY timestamp ASC
                     """)
                 guests_data = cursor.fetchall()
                 guests = []
@@ -483,7 +483,7 @@ class Event:
                 connection.close()
             return guests
         except psycopg2.Error as e:
-            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
     def update_note(self, note: str, player: Player) -> None:
         """
@@ -503,18 +503,18 @@ class Event:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""
-                        update events
-                        set note = '{note}'
-                        where id = {self.id}
+                        UPDATE events
+                        SET note = '{note}'
+                        WHERE id = {self.id}
                     """)
-            print(f"[PostgreSQL INFO]: Note was added to {self.date} by {player.name} {player.lastname}")
+            print(f"[PSQL INFO]: Note was added to {self.date} by {player.name} {player.lastname}")
 
             if connection:
                 connection.close()
             self.note = note
 
         except psycopg2.Error as e:
-            print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
 
 def check_player(telegram_id: int) -> bool:
@@ -534,7 +534,7 @@ def check_player(telegram_id: int) -> bool:
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""  
-                    select true from players where telegram_id={telegram_id};
+                    SELECT true FROM players WHERE telegram_id={telegram_id};
                 """)
             player = cursor.fetchall()
         if connection:
@@ -543,7 +543,7 @@ def check_player(telegram_id: int) -> bool:
         return True if player else False
 
     except psycopg2.Error as e:
-        print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+        print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
 
 def get_event_by_date(date: str) -> Event:
@@ -563,7 +563,7 @@ def get_event_by_date(date: str) -> Event:
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""  
-                    select * from events where date='{date}'
+                    SELECT * FROM events WHERE date='{date}'
                 """)
             event = cursor.fetchall()
             event_id = event[0][0]
@@ -577,7 +577,7 @@ def get_event_by_date(date: str) -> Event:
         return Event(event_id, event_date, event_type, event_note)
 
     except psycopg2.Error as e:
-        print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+        print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
 
 def get_event_by_id(event_id: int) -> Event:
@@ -597,7 +597,7 @@ def get_event_by_id(event_id: int) -> Event:
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""  
-                    select * from events where id='{event_id}'
+                    SELECT * FROM events WHERE id='{event_id}'
                 """)
             event = cursor.fetchall()
             event_id = event[0][0]
@@ -611,7 +611,7 @@ def get_event_by_id(event_id: int) -> Event:
         return Event(event_id, event_date, event_type, event_note)
 
     except psycopg2.Error as e:
-        print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+        print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
 
 def get_guest_by_id(guest_id: int) -> Guest:
@@ -631,7 +631,7 @@ def get_guest_by_id(guest_id: int) -> Guest:
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""  
-                    select id, name, event, added_by from guests where id='{guest_id}'
+                    SELECT id, name, event, added_by FROM guests WHERE id='{guest_id}'
                 """)
             guest = cursor.fetchall()
             guest_id = guest[0][0]
@@ -645,7 +645,7 @@ def get_guest_by_id(guest_id: int) -> Guest:
         return Guest(guest_id, guest_name, guest_event_id, guest_added_by)
 
     except psycopg2.Error as e:
-        print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+        print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
 
 def upcoming_events() -> list:
@@ -664,7 +664,7 @@ def upcoming_events() -> list:
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""  
-                    select * from events where date >= current_date order by date ASC
+                    SELECT * FROM events WHERE date >= current_date ORDER BY date ASC
                 """)
 
             events_raw = cursor.fetchall()
@@ -677,7 +677,7 @@ def upcoming_events() -> list:
         return events
 
     except psycopg2.Error as e:
-        print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+        print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
 
 def get_player_by_telegram_id(telegram_id: int) -> Player:
@@ -697,7 +697,7 @@ def get_player_by_telegram_id(telegram_id: int) -> Player:
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""  
-                    select  players.id,
+                    SELECT  players.id,
                             players.name, 
                             players.lastname,
                             players.telegram_id,
@@ -706,7 +706,7 @@ def get_player_by_telegram_id(telegram_id: int) -> Player:
                             players.mobile,
                             players.active,
                             players.admin
-                    from players where telegram_id={telegram_id}
+                    FROM players WHERE telegram_id={telegram_id}
                 """)
             player = cursor.fetchall()
             player = player[0]
@@ -719,11 +719,11 @@ def get_player_by_telegram_id(telegram_id: int) -> Player:
                       birthdate=player[4],
                       email=player[5],
                       mobile=player[6],
-                      active=player[7],
-                      admin=player[8])
+                      is_active=player[7],
+                      is_admin=player[8])
 
     except psycopg2.Error as e:
-        print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+        print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
 
 def get_active_players() -> list:
@@ -742,7 +742,7 @@ def get_active_players() -> list:
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""  
-                select  players.id,
+                SELECT  players.id,
                         players.name, 
                         players.lastname,
                         players.telegram_id,
@@ -751,7 +751,7 @@ def get_active_players() -> list:
                         players.mobile,
                         players.active,
                         players.admin
-                from players where active=true
+                FROM players WHERE active=true
                 """)
             players_data = cursor.fetchall()
             players = []
@@ -763,14 +763,14 @@ def get_active_players() -> list:
                                       birthdate=player[4],
                                       email=player[5],
                                       mobile=player[6],
-                                      active=player[7],
-                                      admin=player[8]))
+                                      is_active=player[7],
+                                      is_admin=player[8]))
         if connection:
             connection.close()
         return players
 
     except psycopg2.Error as e:
-        print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+        print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
 
 def get_all_players() -> list:
@@ -789,7 +789,7 @@ def get_all_players() -> list:
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""  
-                select  players.id,
+                SELECT  players.id,
                         players.name, 
                         players.lastname,
                         players.telegram_id,
@@ -798,7 +798,7 @@ def get_all_players() -> list:
                         players.mobile,
                         players.active,
                         players.admin
-                from players
+                FROM players
                 """)
             players_data = cursor.fetchall()
             players = []
@@ -810,14 +810,14 @@ def get_all_players() -> list:
                                       birthdate=player[4],
                                       email=player[5],
                                       mobile=player[6],
-                                      active=player[7],
-                                      admin=player[8]))
+                                      is_active=player[7],
+                                      is_admin=player[8]))
         if connection:
             connection.close()
         return players
 
     except psycopg2.Error as e:
-        print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
+        print(f"[PSQL ERROR: {e.pgcode}]: {e}")
 
 
 def create_event(event_date: str, event_type: str, created_by: int) -> Event:
@@ -825,6 +825,7 @@ def create_event(event_date: str, event_type: str, created_by: int) -> Event:
     Creates a new event
     :param event_date: date in string format yyyy-mm-dd
     :param event_type: 'train' or 'game'
+    :param created_by: the player, who created the event
     :return: Event
     """
     try:
@@ -838,13 +839,13 @@ def create_event(event_date: str, event_type: str, created_by: int) -> Event:
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""
-                    insert into events(date, type, created_by, timestamp)
-                    values('{event_date}', '{event_type}', {created_by}, CURRENT_TIMESTAMP)
-                    on conflict (date) do update
-                        set type = '{event_type}';
+                    INSERT INTO events(date, type, created_by, timestamp)
+                    VALUES('{event_date}', '{event_type}', {created_by}, CURRENT_TIMESTAMP)
+                    ON CONFLICT (date) DO UPDATE
+                        SET type = '{event_type}';
 
-                    select id, date, type, note from events 
-                    where date = '{event_date}';
+                    SELECT id, date, type, note FROM events 
+                    WHERE date = '{event_date}';
                 """)
             event = cursor.fetchall()
             event_id = event[0][0]
@@ -858,6 +859,4 @@ def create_event(event_date: str, event_type: str, created_by: int) -> Event:
         return Event(event_id, event_date, event_type, event_note)
 
     except psycopg2.Error as e:
-        print(f"[PostgreSQL ERROR: {e.pgcode}]: {e}")
-
-
+        print(f"[PSQL ERROR: {e.pgcode}]: {e}")

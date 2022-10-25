@@ -7,5 +7,4 @@ database = os.getenv('DB')
 port = os.getenv('DB_PORT')
 bot_token = os.getenv('BOT_TOKEN')
 telegram_group_id = os.getenv('TS_GROUP_ID')
-
-developers: list = [381956774]
+master_telegram_id = os.getenv('MASTER_TG_ID')

@@ -14,7 +14,7 @@ def test(message):
     Bot command for test purposes. Only available for the developers, telegram ids hardcoded
     If you're a collaborator, add your telegram id into 'developers' var in 'config.py'
     """
-    if message.from_user.id in config.developers:
+    if message.from_user.id == config.master_telegram_id:
         pass
 
 

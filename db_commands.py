@@ -42,12 +42,12 @@ class Player:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""  
-                            SELECT decision FROM attendance
-                            WHERE 
-                                player = {self.id}
-                            AND 
-                                event = (SELECT id FROM events WHERE date = '{event_date}')
-                        """)
+                        SELECT decision FROM attendance
+                        WHERE 
+                            player = {self.id}
+                        AND 
+                            event = (SELECT id FROM events WHERE date = '{event_date}')
+                    """)
                 decision = cursor.fetchall()
 
             if connection:

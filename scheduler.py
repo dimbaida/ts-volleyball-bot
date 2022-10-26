@@ -9,7 +9,6 @@ def send_event_reminder() -> None:
     """
     Sends the reminder to players who didn't yet make any decision on the nearest upcoming event
     """
-    print("[INFO] Starting the scheduled event reminder")
     events = db.upcoming_events()
     if events:
         event = events[0]
@@ -39,7 +38,6 @@ def send_birthday_reminder() -> None:
     today = datetime.datetime.now()
     bot = telebot.TeleBot(config.bot_token)
     for player in players:
-        print(f"[INFO] Checking birthday {player.name} {player.lastname} -> {player.birthdate}")
         if player.birthdate.month == today.month and player.birthdate.day == today.day:
             print("[INFO] Date match. Sending to chat")
             bot.send_message(config.telegram_group_id,

@@ -1,9 +1,15 @@
+import logging
 import telebot
 import config
 import inline_calendar
 from datetime import datetime
 from common_constants import ICONS
 import db_commands as db
+
+logging.basicConfig(filename='bot.log',
+                    level=logging.INFO,
+                    datefmt='%d.%m.%y|%H:%M:%S',
+                    format='[%(asctime)s] %(name)s:%(levelname)s >> %(message)s')
 
 bot = telebot.TeleBot(config.bot_token)
 
@@ -14,12 +20,13 @@ def test(message):
     Bot command for test purposes. Only available for the developers, telegram ids hardcoded
     If you're a collaborator, add your telegram id into 'developers' var in 'config.py'
     """
-    if message.from_user.id == config.master_telegram_id:
+    if message.from_user.id == int(config.master_telegram_id):
         pass
 
 
 @bot.message_handler(commands=['get_id'], chat_types=['private'])
 def get_id(message):
+    logging.info(f'id request from {message.from_user.id}')
     bot.send_message(message.from_user.id,
                      f'<code>твій telegram ID: {message.from_user.id}</code>',
                      reply_markup=telebot.types.ReplyKeyboardRemove(),
@@ -30,6 +37,8 @@ def get_id(message):
 @bot.message_handler(commands=['start'], chat_types=['private'])
 def start(message):
     if db.check_player(message.from_user.id):
+        player = db.get_player_by_telegram_id(message.from_user.id)
+        logging.info(f"[{player.id}]{player.lastname} {player.name} '/start'")
         keyboard = telebot.types.InlineKeyboardMarkup()
         for event in db.upcoming_events():
             btn = telebot.types.InlineKeyboardButton(f"{event.icon}  {event.date_formatted}",
@@ -43,7 +52,7 @@ def start(message):
                          reply_markup=keyboard)
 
     else:
-        print(f'[Error] Request from [{message.from_user.id}] — unknown player')
+        logging.warning(f"[{message.from_user.id}] unknown user '/start'")
         bot.send_message(message.from_user.id,
                          '<code>Тебе немає в списку гравців. Напиши адміністратору:</code> @dimbaida.',
                          parse_mode='HTML',
@@ -55,6 +64,7 @@ def manage(message):
     if db.check_player(message.from_user.id):
         player = db.get_player_by_telegram_id(message.from_user.id)
         if player.is_admin:
+            logging.info(f"[{player.id}]{player.lastname} {player.name} '/manage'")
             keyboard = telebot.types.InlineKeyboardMarkup()
             for event in db.upcoming_events():
                 btn = telebot.types.InlineKeyboardButton(f"Змінити {event.icon} {event.date_formatted}",
@@ -70,14 +80,14 @@ def manage(message):
                              reply_markup=keyboard)
 
         else:
-            print(f'[Error] Request from [{message.from_user.id}] — forbidden to manage, not an admin')
+            logging.warning(f"[{player.id}]{player.lastname} {player.name} '/manage' - not an admin!")
             bot.send_message(message.from_user.id,
                              '<code>Ця секція доступна тільки користувачам з правами адміністратора.</code>',
                              parse_mode='HTML',
                              disable_notification=True)
 
     else:
-        print(f'[Error] Request from [{message.from_user.id}] — unknown player')
+        logging.warning(f"[{message.from_user.id}] unknown user '/manage'")
         bot.send_message(message.from_user.id,
                          '<code>Тебе немає в списку гравців. Напиши адміністратору:</code> @dimbaida.',
                          parse_mode='HTML',
@@ -144,7 +154,7 @@ def text(message):
 def callback_inline(call):
     player = db.get_player_by_telegram_id(call.message.chat.id)
     player.purge_cache()
-    print(f'<{player.id}> {player.lastname} {player.name} callback {call.data}')
+    logging.info(f'[{player.id}]{player.lastname} {player.name} > {call.data}')
     command, data = call.data.split('::')
 
     # COMMON SECTION
@@ -207,7 +217,8 @@ def callback_inline(call):
                                   parse_mode='HTML',
                                   reply_markup=keyboard)
         except telebot.apihelper.ApiTelegramException as e:
-            print(f'[ERROR] {e}')
+            if e.error_code != 400:
+                logging.critical(e)
 
     if command == 'LIST_EVENTS>>EVENT>>GUESTS':
         event = db.get_event_by_id(data)
@@ -378,7 +389,7 @@ def callback_inline(call):
         keyboard.row(btn_01)
         keyboard.row(btn_02)
         event.delete()
-        print(f'[INFO] Event {event.date_formatted} <{event.id}> was deleted by player <{player.id}> {player.lastname} {player.name}')
+        logging.info(f"[{event.id} - {event.date_formatted}] was deleted by [{player.id}]{player.lastname} {player.name}")
         bot.edit_message_text(f'<code>Подія {event.icon} {event.date_formatted} видалена</code>',
                               call.message.chat.id,
                               call.message.message_id,
@@ -441,7 +452,7 @@ def callback_inline(call):
         keyboard.row(btn_01)
         keyboard.row(btn_02)
         event = db.create_event(date, event_type, player.id)
-        print(f'[INFO] Event {event.date_formatted} <{event.id}> <{event.type}> was created by <{player.id}> {player.lastname} {player.name}')
+        logging.info(f"[{event.id} - {event.date_formatted}] was created by [{player.id}]{player.lastname} {player.name}")
         bot.edit_message_text(f'<code>Подію створено: {event.icon} {event.date_formatted}</code>',
                               call.message.chat.id,
                               call.message.message_id,

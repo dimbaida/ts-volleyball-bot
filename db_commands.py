@@ -1,3 +1,4 @@
+import logging
 import psycopg2
 import datetime
 from common_constants import ICONS
@@ -59,7 +60,7 @@ class Player:
                 return None
 
         except psycopg2.Error as e:
-            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+            logging.error(e)
 
     def set_decision(self, event_date: datetime.datetime, decision: bool) -> None:
         """
@@ -88,13 +89,13 @@ class Player:
                         ON CONFLICT (player, event) DO UPDATE
                             SET decision = {decision}, timestamp = CURRENT_TIMESTAMP
                     """)
-            print(f"[PSQL INFO]: {self.name} {self.lastname} inserted values into 'attendance': {event_date}, {decision}")
+            logging.info(f"[{self.id}]{self.lastname} {self.name} -> {event_date} - {decision}")
 
             if connection:
                 connection.close()
 
         except psycopg2.Error as e:
-            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+            logging.error(e)
 
     def write_cache(self, cache: str) -> None:
         """
@@ -118,7 +119,7 @@ class Player:
             if connection:
                 connection.close()
         except psycopg2.Error as e:
-            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+            logging.error(e)
 
     def read_cache(self) -> str:
         """
@@ -145,7 +146,7 @@ class Player:
             return cache[0][0]
 
         except psycopg2.Error as e:
-            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+            logging.error(e)
 
     def purge_cache(self) -> None:
         """
@@ -170,7 +171,7 @@ class Player:
                 connection.close()
 
         except psycopg2.Error as e:
-            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+            logging.error(e)
 
 
 class Guest:
@@ -206,7 +207,7 @@ class Guest:
             if connection:
                 connection.close()
         except psycopg2.Error as e:
-            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+            logging.error(e)
 
     def delete(self):
         """
@@ -230,7 +231,7 @@ class Guest:
                 connection.close()
 
         except psycopg2.Error as e:
-            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+            logging.error(e)
 
 
 class Event:
@@ -292,7 +293,7 @@ class Event:
                 connection.close()
             return players
         except psycopg2.Error as e:
-            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+            logging.error(e)
 
     def players_formatted(self) -> str:
         """
@@ -373,7 +374,7 @@ class Event:
             return text
 
         except psycopg2.Error as e:
-            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+            logging.error(e)
 
     def delete(self):
         """
@@ -399,7 +400,7 @@ class Event:
                 connection.close()
 
         except psycopg2.Error as e:
-            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+            logging.error(e)
 
     def switch_type(self):
         """
@@ -423,7 +424,7 @@ class Event:
             if connection:
                 connection.close()
         except psycopg2.Error as e:
-            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+            logging.error(e)
         self.type = new_type
         self.icon = ICONS[self.type]
 
@@ -447,13 +448,13 @@ class Event:
                         INSERT INTO guests(event, name, added_by, timestamp)
                         VALUES({self.id}, '{guest_name}', {player.id}, CURRENT_TIMESTAMP)
                     """)
-            print(f"[PSQL INFO]: Guest {guest_name} was added to {self.date} by {player.lastname} {player.name}")
+            logging.info(f"guest {guest_name} was added to [{self.id} - {self.date_formatted}] by [{player.id}]{player.lastname} {player.name}")
 
             if connection:
                 connection.close()
 
         except psycopg2.Error as e:
-            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+            logging.error(e)
 
     def guests(self) -> list:
         """
@@ -483,7 +484,7 @@ class Event:
                 connection.close()
             return guests
         except psycopg2.Error as e:
-            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+            logging.error(e)
 
     def update_note(self, note: str, player: Player) -> None:
         """
@@ -507,14 +508,14 @@ class Event:
                         SET note = '{note}'
                         WHERE id = {self.id}
                     """)
-            print(f"[PSQL INFO]: Note was added to {self.date} by {player.name} {player.lastname}")
+            logging.info(f'note added to [{self.id} - {self.date_formatted}] by [{player.id}]{player.lastname} {player.name}: "{note}"')
 
             if connection:
                 connection.close()
             self.note = note
 
         except psycopg2.Error as e:
-            print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+            logging.error(e)
 
 
 def check_player(telegram_id: int) -> bool:
@@ -543,7 +544,7 @@ def check_player(telegram_id: int) -> bool:
         return True if player else False
 
     except psycopg2.Error as e:
-        print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+        logging.error(e)
 
 
 def get_event_by_date(date: str) -> Event:
@@ -577,7 +578,7 @@ def get_event_by_date(date: str) -> Event:
         return Event(event_id, event_date, event_type, event_note)
 
     except psycopg2.Error as e:
-        print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+        logging.error(e)
 
 
 def get_event_by_id(event_id: int) -> Event:
@@ -611,7 +612,7 @@ def get_event_by_id(event_id: int) -> Event:
         return Event(event_id, event_date, event_type, event_note)
 
     except psycopg2.Error as e:
-        print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+        logging.error(e)
 
 
 def get_guest_by_id(guest_id: int) -> Guest:
@@ -645,7 +646,7 @@ def get_guest_by_id(guest_id: int) -> Guest:
         return Guest(guest_id, guest_name, guest_event_id, guest_added_by)
 
     except psycopg2.Error as e:
-        print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+        logging.error(e)
 
 
 def upcoming_events() -> list:
@@ -677,7 +678,7 @@ def upcoming_events() -> list:
         return events
 
     except psycopg2.Error as e:
-        print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+        logging.error(e)
 
 
 def get_player_by_telegram_id(telegram_id: int) -> Player:
@@ -723,7 +724,7 @@ def get_player_by_telegram_id(telegram_id: int) -> Player:
                       is_admin=player[8])
 
     except psycopg2.Error as e:
-        print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+        logging.error(e)
 
 
 def get_active_players() -> list:
@@ -770,7 +771,7 @@ def get_active_players() -> list:
         return players
 
     except psycopg2.Error as e:
-        print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+        logging.error(e)
 
 
 def get_all_players() -> list:
@@ -817,7 +818,7 @@ def get_all_players() -> list:
         return players
 
     except psycopg2.Error as e:
-        print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+        logging.error(e)
 
 
 def create_event(event_date: str, event_type: str, created_by: int) -> Event:
@@ -859,4 +860,4 @@ def create_event(event_date: str, event_type: str, created_by: int) -> Event:
         return Event(event_id, event_date, event_type, event_note)
 
     except psycopg2.Error as e:
-        print(f"[PSQL ERROR: {e.pgcode}]: {e}")
+        logging.error(e)

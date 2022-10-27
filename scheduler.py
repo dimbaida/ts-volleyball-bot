@@ -42,5 +42,5 @@ def send_birthday_reminder() -> None:
         if player.birthdate.month == today.month and player.birthdate.day == today.day:
             logging.info(f"[{player.id}]{player.lastname} {player.name} birthday")
             bot.send_message(config.telegram_group_id,
-                             f"<code>{player.name} {player.lastname} стогодні святкує свій день народження! {ICONS['party']}</code>",
+                             f"<code>{player.name} {player.lastname} сьогодні святкує свій день народження! {ICONS['party']}</code>",
                              parse_mode='HTML')

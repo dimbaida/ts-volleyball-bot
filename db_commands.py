@@ -448,7 +448,7 @@ class Event:
                         INSERT INTO guests(event, name, added_by, timestamp)
                         VALUES({self.id}, '{guest_name}', {player.id}, CURRENT_TIMESTAMP)
                     """)
-            logging.info(f"guest {guest_name} was added to [{self.id} - {self.date_formatted}] by [{player.id}]{player.lastname} {player.name}")
+            logging.info(f"[{player.id}]{player.lastname} {player.name} added guest {guest_name} to [{self.id}]{self.date_formatted}")
 
             if connection:
                 connection.close()
@@ -508,7 +508,7 @@ class Event:
                         SET note = '{note}'
                         WHERE id = {self.id}
                     """)
-            logging.info(f'note added to [{self.id} - {self.date_formatted}] by [{player.id}]{player.lastname} {player.name}: "{note}"')
+            logging.info(f'[{player.id}]{player.lastname} {player.name} added note to [{self.id}]{self.date_formatted}: "{note}"')
 
             if connection:
                 connection.close()

@@ -1,3 +1,4 @@
+import logging
 import telebot
 import config
 import datetime
@@ -20,7 +21,7 @@ def send_event_reminder() -> None:
         bot = telebot.TeleBot(config.bot_token)
         for player in players:
             if player.check_attendance(event.date) is None:
-                print(f'[INFO] Sending reminder on {event.date} to {player.name} {player.lastname}')
+                logging.info(f'Sending reminder [{event.id} - {event.date}] to [{player.id}]{player.lastname} {player.name}')
                 event_text = f"Нагадувння: {event.icon} {event.date_formatted}"
                 if event.note:
                     event_text += f"\n{event.note}"
@@ -39,8 +40,7 @@ def send_birthday_reminder() -> None:
     bot = telebot.TeleBot(config.bot_token)
     for player in players:
         if player.birthdate.month == today.month and player.birthdate.day == today.day:
-            print("[INFO] Date match. Sending to chat")
+            logging.info(f"[{player.id}]{player.lastname} {player.name} birthday")
             bot.send_message(config.telegram_group_id,
                              f"<code>{player.name} {player.lastname} стогодні святкує свій день народження! {ICONS['party']}</code>",
                              parse_mode='HTML')
-    print(f"[INFO] Birthdays check finished")

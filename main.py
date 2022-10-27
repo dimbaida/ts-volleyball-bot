@@ -6,8 +6,7 @@ from datetime import datetime
 from common_constants import ICONS
 import db_commands as db
 
-logging.basicConfig(filename='log.txt',
-                    level=logging.INFO,
+logging.basicConfig(level=logging.INFO,
                     datefmt='%d.%m.%y|%H:%M:%S',
                     format='[%(asctime)s] %(name)s:%(levelname)s >> %(message)s')
 

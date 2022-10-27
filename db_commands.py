@@ -4,6 +4,8 @@ import datetime
 from common_constants import ICONS
 from config import host, user, password, database
 
+logging.basicConfig(level=logging.INFO, format='%(levelname)s >> %(message)s')
+
 
 class Player:
     def __init__(self,

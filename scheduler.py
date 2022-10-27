@@ -5,9 +5,7 @@ import datetime
 from common_constants import ICONS
 import db_commands as db
 
-logging.basicConfig(level=logging.INFO,
-                    datefmt='%d.%m.%y|%H:%M:%S',
-                    format='[%(asctime)s] %(name)s:%(levelname)s >> %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(levelname)s >> %(message)s')
 
 
 def send_event_reminder() -> None:

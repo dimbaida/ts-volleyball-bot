@@ -15,7 +15,8 @@ class Player:
                  email: str,
                  mobile: str,
                  is_active: bool,
-                 is_admin: bool):
+                 is_admin: bool,
+                 in_team: bool):
         self.id: int = player_id
         self.name: str = name
         self.lastname: str = lastname
@@ -25,6 +26,7 @@ class Player:
         self.mobile: str = mobile
         self.is_active: bool = is_active
         self.is_admin: bool = is_admin
+        self.in_team: bool = in_team
 
     def check_attendance(self, event_date: datetime.datetime) -> bool or None:
         """
@@ -271,7 +273,7 @@ class Event:
                                players.mobile,
                                players.active,
                                players.admin,
-                               players.cache
+                               players.team
                         FROM attendance
                         JOIN players ON players.id = attendance.player
                         WHERE attendance.event = (SELECT id FROM events WHERE date = '{self.date}')
@@ -288,7 +290,8 @@ class Event:
                                           email=player[5],
                                           mobile=player[6],
                                           is_active=player[7],
-                                          is_admin=player[8]))
+                                          is_admin=player[8],
+                                          in_team=player[9]))
             if connection:
                 connection.close()
             return players
@@ -311,7 +314,7 @@ class Event:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""
-                        SELECT p.name, p.lastname, a.decision FROM players p
+                        SELECT p.name, p.lastname, p.team, a.decision FROM players p
                         LEFT JOIN attendance a ON p.id = a.player 
                             AND a.event = (SELECT e.id FROM events e WHERE e.date = '{self.date}')
                         WHERE p.active
@@ -338,16 +341,20 @@ class Event:
                 num_guests: int = 1
                 num_no: int = 1
                 num_none: int = 1
+
                 for player in players:
-                    if player[2] is True:
-                        players_yes += f'\n{num_yes}. {player[1]} {player[0]}'
+                    lastname, name, in_team, decision = player
+                    if decision is True:
+                        players_yes += f'\n{num_yes}. {lastname} {name}'
                         num_yes += 1
-                    elif player[2] is False:
-                        players_no += f'\n{num_no}. {player[1]} {player[0]}'
+                    elif decision is False:
+                        players_no += f'\n{num_no}. {lastname} {name}'
                         num_no += 1
-                    elif player[2] is None:
-                        players_none += f'\n{num_none}. {player[1]} {player[0]}'
-                        num_none += 1
+                    elif decision is None:
+                        if self.type == 'train' or (self.type == 'game' and in_team):
+                            players_none += f'\n{num_none}. {lastname} {name}'
+                            num_none += 1
+
                 for guest in guests:
                     guests_str += f'\n{num_guests}. {guest[0]}'
                     num_guests += 1
@@ -706,7 +713,8 @@ def get_player_by_telegram_id(telegram_id: int) -> Player:
                             players.email,
                             players.mobile,
                             players.active,
-                            players.admin
+                            players.admin,
+                            players.team
                     FROM players WHERE telegram_id={telegram_id}
                 """)
             player = cursor.fetchall()
@@ -721,7 +729,8 @@ def get_player_by_telegram_id(telegram_id: int) -> Player:
                       email=player[5],
                       mobile=player[6],
                       is_active=player[7],
-                      is_admin=player[8])
+                      is_admin=player[8],
+                      in_team=player[9])
 
     except psycopg2.Error as e:
         logging.error(e)
@@ -751,7 +760,8 @@ def get_active_players() -> list:
                         players.email,
                         players.mobile,
                         players.active,
-                        players.admin
+                        players.admin,
+                        players.team
                 FROM players WHERE active=true
                 """)
             players_data = cursor.fetchall()
@@ -765,7 +775,8 @@ def get_active_players() -> list:
                                       email=player[5],
                                       mobile=player[6],
                                       is_active=player[7],
-                                      is_admin=player[8]))
+                                      is_admin=player[8],
+                                      in_team=player[9]))
         if connection:
             connection.close()
         return players
@@ -798,7 +809,8 @@ def get_all_players() -> list:
                         players.email,
                         players.mobile,
                         players.active,
-                        players.admin
+                        players.admin,
+                        players.team
                 FROM players
                 """)
             players_data = cursor.fetchall()
@@ -812,7 +824,8 @@ def get_all_players() -> list:
                                       email=player[5],
                                       mobile=player[6],
                                       is_active=player[7],
-                                      is_admin=player[8]))
+                                      is_admin=player[8],
+                                      in_team=player[9]))
         if connection:
             connection.close()
         return players

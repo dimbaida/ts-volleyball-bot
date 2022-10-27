@@ -25,14 +25,15 @@ def send_event_reminder() -> None:
         bot = telebot.TeleBot(config.bot_token)
         for player in players:
             if player.check_attendance(event.date) is None:
-                logging.info(f'Sending reminder [{event.id} - {event.date}] to [{player.id}]{player.lastname} {player.name}')
                 event_text = f"Нагадування: {event.icon} {event.date_formatted}"
                 if event.note:
                     event_text += f"\n{event.note}"
-                bot.send_message(player.telegram_id,
-                                 f'<code>{event_text}</code>',
-                                 reply_markup=keyboard,
-                                 parse_mode='HTML')
+                if event.type == 'train' or (event.type == 'game' and player.in_team):
+                    logging.info(f'Sending reminder [{event.id}]{event.date} to [{player.id}]{player.lastname} {player.name}')
+                    bot.send_message(player.telegram_id,
+                                     f'<code>{event_text}</code>',
+                                     reply_markup=keyboard,
+                                     parse_mode='HTML')
 
 
 def send_birthday_reminder() -> None:

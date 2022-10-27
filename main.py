@@ -37,7 +37,7 @@ def get_id(message):
 def start(message):
     if db.check_player(message.from_user.id):
         player = db.get_player_by_telegram_id(message.from_user.id)
-        logging.info(f"[{player.id}]{player.lastname} {player.name} '/start'")
+        logging.info(f"[{player.id}]{player.lastname} {player.name} > '/start'")
         keyboard = telebot.types.InlineKeyboardMarkup()
         for event in db.upcoming_events():
             btn = telebot.types.InlineKeyboardButton(f"{event.icon}  {event.date_formatted}",
@@ -63,7 +63,7 @@ def manage(message):
     if db.check_player(message.from_user.id):
         player = db.get_player_by_telegram_id(message.from_user.id)
         if player.is_admin:
-            logging.info(f"[{player.id}]{player.lastname} {player.name} '/manage'")
+            logging.info(f"[{player.id}]{player.lastname} {player.name} > '/manage'")
             keyboard = telebot.types.InlineKeyboardMarkup()
             for event in db.upcoming_events():
                 btn = telebot.types.InlineKeyboardButton(f"Змінити {event.icon} {event.date_formatted}",
@@ -181,9 +181,12 @@ def callback_inline(call):
         btn_02 = telebot.types.InlineKeyboardButton('НІ', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:no')
         btn_03 = telebot.types.InlineKeyboardButton('Гості', callback_data=f'LIST_EVENTS>>EVENT>>GUESTS::{event.id}')
         btn_back = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
-        keyboard.row(btn_01, btn_02)
+
         if event.type == 'train':
+            keyboard.row(btn_01, btn_02)
             keyboard.row(btn_03)
+        if event.type == 'game' and player.in_team:
+            keyboard.row(btn_01, btn_02)
         keyboard.row(btn_back)
 
         if item == 'yes':

@@ -251,7 +251,7 @@ class Event:
         self.icon: str = ICONS[self.type]
         self.note: str = note
 
-    def players(self) -> list:
+    def players(self) -> list[Player]:
         """
         Returns the list of players that made a decision on the event
         :return: players
@@ -446,7 +446,7 @@ class Event:
         except psycopg2.Error as e:
             logging.error(e)
 
-    def guests(self) -> list:
+    def guests(self) -> list[Guest]:
         """
         Returns the list of guests for the event
         :return: guests
@@ -639,7 +639,7 @@ def get_guest_by_id(guest_id: int) -> Guest:
         logging.error(e)
 
 
-def upcoming_events() -> list:
+def upcoming_events() -> list[Event]:
     """
     Get the list of upcoming events
     :return: list of Events which will take place after today
@@ -655,7 +655,7 @@ def upcoming_events() -> list:
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""  
-                    SELECT * FROM events WHERE date >= current_date ORDER BY date ASC
+                    SELECT * FROM events WHERE date >= CURRENT_DATE ORDER BY date ASC;
                 """)
 
             events_raw = cursor.fetchall()
@@ -719,7 +719,7 @@ def get_player_by_telegram_id(telegram_id: int) -> Player:
         logging.error(e)
 
 
-def get_active_players() -> list:
+def get_active_players() -> list[Player]:
     """
     Get the list of all active players
     :return: list of Players
@@ -768,7 +768,7 @@ def get_active_players() -> list:
         logging.error(e)
 
 
-def get_all_players() -> list:
+def get_all_players() -> list[Player]:
     """
     Get the list of all players
     :return: list of Players

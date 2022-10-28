@@ -316,71 +316,52 @@ class Event:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""
-                        SELECT p.name, p.lastname, p.team, a.decision FROM players p
-                        LEFT JOIN attendance a ON p.id = a.player 
-                            AND a.event = (SELECT e.id FROM events e WHERE e.date = '{self.date}')
-                        WHERE p.active
-                        ORDER BY a.timestamp ASC
+                        SELECT player FROM attendance
+                        WHERE decision=true and event={self.id}
+                        ORDER BY timestamp ASC;
                     """)
-                players = cursor.fetchall()
+                players_yes = [x[0] for x in cursor.fetchall()]
+
+                cursor.execute(
+                    f"""
+                        SELECT player FROM attendance
+                        WHERE decision=false and event={self.id}
+                        ORDER BY timestamp ASC;
+                    """)
+                players_no = [x[0] for x in cursor.fetchall()]
 
                 cursor.execute(
                     f"""
                         SELECT name FROM guests
                         WHERE event = {self.id}
-                        ORDER BY timestamp ASC
+                        ORDER BY timestamp ASC;
                     """)
-                guests = cursor.fetchall()
+                guests = [x[0] for x in cursor.fetchall()]
 
                 if connection:
                     connection.close()
 
-                players_yes: str = ''
-                guests_str: str = ''
-                players_no: str = ''
-                players_none: str = ''
-                num_yes: int = 1
-                num_guests: int = 1
-                num_no: int = 1
-                num_none: int = 1
+                text = text_yes = text_guests = text_no = text_none = ''
+                i = j = k = 1
+                for p in get_active_players():
+                    if p.id in players_yes:
+                        text_yes += f'{i}. {p.lastname} {p.name}\n'
+                        i += 1
+                    elif p.id in players_no:
+                        text_no += f'{j}. {p.lastname} {p.name}\n'
+                        j += 1
+                    elif self.type == 'train' or (self.type == 'game' and p.in_team):
+                        text_none += f'{k}. {p.lastname} {p.name}\n'
+                        k += 1
+                for n, g in enumerate(guests):
+                    text_guests += f'{n+1}. {g}\n'
 
-                for player in players:
-                    lastname, name, in_team, decision = player
-                    if decision is True:
-                        players_yes += f'\n{num_yes}. {lastname} {name}'
-                        num_yes += 1
-                    elif decision is False:
-                        players_no += f'\n{num_no}. {lastname} {name}'
-                        num_no += 1
-                    elif decision is None:
-                        if self.type == 'train' or (self.type == 'game' and in_team):
-                            players_none += f'\n{num_none}. {lastname} {name}'
-                            num_none += 1
+                text = text + f'Прийдуть:\n{text_yes}' if text_yes else text
+                text = text + f'\nГості:\n{text_guests}' if text_guests and self.type == 'train' else text
+                text = text + f'\nПропустять:\n{text_no}' if text_no else text
+                text = text + f'\nНе відмітились:\n{text_none}' if text_none else text
 
-                for guest in guests:
-                    guests_str += f'\n{num_guests}. {guest[0]}'
-                    num_guests += 1
-
-            text = ''
-            if players_yes:
-                text += "Прийдуть:"
-                text += players_yes
-                text += '\n\n'
-            if guests:
-                text += "Гості:"
-                text += guests_str
-                text += '\n\n'
-            if players_no:
-                text += 'Пропустять:'
-                text += players_no
-                text += '\n\n'
-            if players_none:
-                text += 'Не відмітились:'
-                text += players_none
-                text += '\n\n'
-            else:
-                text += "Всі гравці відмічені"
-            return text
+                return text
 
         except psycopg2.Error as e:
             logging.error(e)

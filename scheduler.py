@@ -28,10 +28,13 @@ def send_event_reminder() -> None:
                     event_text += f"\n{event.note}"
                 if event.type == 'train' or (event.type == 'game' and player.in_team):
                     logging.info(f'Sending reminder [{event.id}]{event.date} to [{player.id}]{player.lastname} {player.name}')
-                    bot.send_message(player.telegram_id,
-                                     f'<code>{event_text}</code>',
-                                     reply_markup=keyboard,
-                                     parse_mode='HTML')
+                    try:
+                        bot.send_message(player.telegram_id,
+                                         f'<code>{event_text}</code>',
+                                         reply_markup=keyboard,
+                                         parse_mode='HTML')
+                    except telebot.apihelper.ApiTelegramException as e:
+                        logging.error(f'Failed to send message [{player.id}]{player.lastname} {player.name}: {e}')
 
 
 def send_birthday_reminder() -> None:

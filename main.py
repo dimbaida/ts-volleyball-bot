@@ -60,7 +60,7 @@ def start(message):
 def manage(message):
     if db.check_player(message.from_user.id):
         player = db.get_player_by_telegram_id(message.from_user.id)
-        if player.is_admin:
+        if player.admin:
             logging.info(f"[{player.id}]{player.lastname} {player.name} > '/manage'")
             keyboard = telebot.types.InlineKeyboardMarkup()
             for event in db.upcoming_events():
@@ -99,7 +99,7 @@ def text(message):
         if cache:
             menu_state, data = cache.split('::')
             if menu_state == 'INPUT_GUEST':
-                event = db.get_event_by_id(data)
+                event = db.get_event(data)
                 guest_name = message.text
                 event.add_guest(guest_name, player)
                 keyboard = telebot.types.InlineKeyboardMarkup()
@@ -115,7 +115,7 @@ def text(message):
                 player.purge_cache()
 
             if menu_state == 'EDIT_GUEST':
-                guest = db.get_guest_by_id(data)
+                guest = db.get_guest(data)
                 guest_name = message.text
                 guest.change_name(guest_name)
                 keyboard = telebot.types.InlineKeyboardMarkup()
@@ -128,7 +128,7 @@ def text(message):
                 player.purge_cache()
 
             if menu_state == 'INPUT_NOTE':
-                event = db.get_event_by_id(data)
+                event = db.get_event(data)
                 note = message.text
                 event.update_note(note, player)
                 keyboard = telebot.types.InlineKeyboardMarkup()
@@ -172,7 +172,7 @@ def callback_inline(call):
 
     if command == 'LIST_EVENTS>>EVENT':
         event_id, item = data.split(':')
-        event = db.get_event_by_id(event_id)
+        event = db.get_event(event_id)
         keyboard = telebot.types.InlineKeyboardMarkup()
 
         btn_01 = telebot.types.InlineKeyboardButton('ТАК', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:yes')
@@ -183,23 +183,23 @@ def callback_inline(call):
         if event.type == 'train':
             keyboard.row(btn_01, btn_02)
             keyboard.row(btn_03)
-        if event.type == 'game' and player.in_team:
+        if event.type == 'game' and player.team:
             keyboard.row(btn_01, btn_02)
         keyboard.row(btn_back)
 
         if item == 'yes':
-            att = player.check_attendance(event.date)
+            att = player.check_attendance(event.id)
             if att is False or att is None:
-                player.set_decision(event.date, True)
+                player.set_decision(event.id, True)
                 bot.send_message(config.telegram_group_id,
                                  f"<code>{player.lastname} {player.name} {ICONS['right_arrow']} {event.icon} {event.date_formatted} {ICONS['yes']}</code>",
                                  parse_mode='HTML',
                                  disable_notification=True)
 
         if item == 'no':
-            att = player.check_attendance(event.date)
+            att = player.check_attendance(event.id)
             if att is True or att is None:
-                player.set_decision(event.date, False)
+                player.set_decision(event.id, False)
                 bot.send_message(config.telegram_group_id,
                                  f"<code>{player.lastname} {player.name} {ICONS['right_arrow']} {event.icon} {event.date_formatted} {ICONS['no']}</code>",
                                  parse_mode='HTML',
@@ -221,7 +221,7 @@ def callback_inline(call):
                 logging.critical(e)
 
     if command == 'LIST_EVENTS>>EVENT>>GUESTS':
-        event = db.get_event_by_id(data)
+        event = db.get_event(data)
         keyboard = telebot.types.InlineKeyboardMarkup()
         guests = event.guests()
         if guests:
@@ -250,8 +250,8 @@ def callback_inline(call):
 
     if command == 'LIST_EVENTS>>EVENT>>GUESTS>>GUEST':
         event_id, guest_id = data.split(':')
-        event = db.get_event_by_id(event_id)
-        guest = db.get_guest_by_id(guest_id)
+        event = db.get_event(event_id)
+        guest = db.get_guest(guest_id)
         keyboard = telebot.types.InlineKeyboardMarkup()
         btn_01 = telebot.types.InlineKeyboardButton(f"Змінити ім'я", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>GUEST>>EDIT::{guest.id}')
         btn_02 = telebot.types.InlineKeyboardButton(f"Видалити", callback_data=f'LIST_EVENTS>>EVENT>>GUESTS>>GUEST>>DELETE::{guest.id}')
@@ -265,7 +265,7 @@ def callback_inline(call):
                               reply_markup=keyboard)
 
     if command == 'LIST_EVENTS>>EVENT>>GUESTS>>GUEST>>EDIT':
-        guest = db.get_guest_by_id(data)
+        guest = db.get_guest(data)
         player.write_cache(f'EDIT_GUEST::{guest.id}')
         bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
         bot.send_message(call.message.chat.id,
@@ -274,13 +274,13 @@ def callback_inline(call):
                          reply_markup=telebot.types.ReplyKeyboardRemove())
 
     if command == 'LIST_EVENTS>>EVENT>>GUESTS>>GUEST>>DELETE':
-        guest = db.get_guest_by_id(data)
+        guest = db.get_guest(data)
         keyboard = telebot.types.InlineKeyboardMarkup()
         btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'LIST_EVENTS::')
         keyboard.row(btn)
-        if guest.added_by == call.message.chat.id or player.is_admin:
+        if guest.added_by == call.message.chat.id or player.admin:
             name = guest.name
-            event = db.get_event_by_id(guest.event_id)
+            event = db.get_event(guest.event_id)
             guest.delete()
             bot.edit_message_text(
                 f"<code>Гостя видалено</code>",
@@ -300,7 +300,7 @@ def callback_inline(call):
                 reply_markup=keyboard)
 
     if command == 'LIST_EVENTS>>EVENT>>GUESTS>>INPUT_GUEST':
-        event = db.get_event_by_id(data)
+        event = db.get_event(data)
         player.write_cache(f'INPUT_GUEST::{event.id}')
         bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
         bot.send_message(call.message.chat.id,
@@ -326,7 +326,7 @@ def callback_inline(call):
                               reply_markup=keyboard)
 
     if command == 'MANAGE>>EVENT':
-        event = db.get_event_by_id(data)
+        event = db.get_event(data)
         keyboard = telebot.types.InlineKeyboardMarkup()
         btn_01 = telebot.types.InlineKeyboardButton(f"Змінити тип", callback_data=f'MANAGE>>EVENT>>SWITCH_TYPE::{event.id}')
         btn_02 = telebot.types.InlineKeyboardButton(f"Додати примітку", callback_data=f'MANAGE>>EVENT>>INPUT_NOTE::{event.id}')
@@ -343,7 +343,7 @@ def callback_inline(call):
                               reply_markup=keyboard)
 
     if command == 'MANAGE>>EVENT>>SWITCH_TYPE':
-        event = db.get_event_by_id(data)
+        event = db.get_event(data)
         old_icon = event.icon
         event.switch_type()
         keyboard = telebot.types.InlineKeyboardMarkup()
@@ -359,7 +359,7 @@ def callback_inline(call):
                          parse_mode='HTML')
 
     if command == 'MANAGE>>EVENT>>INPUT_NOTE':
-        event = db.get_event_by_id(data)
+        event = db.get_event(data)
         player.write_cache(f'INPUT_NOTE::{event.id}')
         bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
         bot.send_message(call.message.chat.id,
@@ -368,7 +368,7 @@ def callback_inline(call):
                          reply_markup=telebot.types.ReplyKeyboardRemove())
 
     if command == 'MANAGE>>EVENT>>DELETE':
-        event = db.get_event_by_id(data)
+        event = db.get_event(data)
         keyboard = telebot.types.InlineKeyboardMarkup()
         btn_01 = telebot.types.InlineKeyboardButton('Так',
                                                     callback_data=f'MANAGE>>EVENT>>DELETE>>CONFIRMED::{event.id}')
@@ -382,7 +382,7 @@ def callback_inline(call):
             reply_markup=keyboard)
 
     if command == 'MANAGE>>EVENT>>DELETE>>CONFIRMED':
-        event = db.get_event_by_id(data)
+        event = db.get_event(data)
         keyboard = telebot.types.InlineKeyboardMarkup()
         btn_01 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'MANAGE::')
         btn_02 = telebot.types.InlineKeyboardButton('Вийти', callback_data=f'EXIT::')

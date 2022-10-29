@@ -8,27 +8,17 @@ logging.basicConfig(level=logging.INFO, format='%(levelname)s >> %(message)s')
 
 
 class Player:
-    def __init__(self,
-                 player_id: int,
-                 name: str,
-                 lastname: str,
-                 telegram_id: int,
-                 birthdate: datetime.datetime,
-                 email: str,
-                 mobile: str,
-                 active: bool,
-                 admin: bool,
-                 team: bool):
-        self.id: int = player_id
-        self.name: str = name
-        self.lastname: str = lastname
-        self.telegram_id: int = telegram_id
-        self.birthdate: datetime.datetime = birthdate
-        self.email: str = email
-        self.mobile: str = mobile
-        self.active: bool = active
-        self.admin: bool = admin
-        self.team: bool = team
+    def __init__(self, **kwargs):
+        self.id: int = kwargs['id']
+        self.name: str = kwargs['name']
+        self.lastname: str = kwargs['lastname']
+        self.telegram_id: int = kwargs['telegram_id']
+        self.birthdate: datetime.datetime = kwargs['birthdate']
+        self.email: str = kwargs['email']
+        self.mobile: str = kwargs['mobile']
+        self.active: bool = kwargs['active']
+        self.admin: bool = kwargs['admin']
+        self.team: bool = kwargs['team']
 
     def check_attendance(self, event_id: int) -> bool | None:
         """
@@ -172,17 +162,13 @@ class Player:
 
 
 class Guest:
-    def __init__(self,
-                 guest_id: int,
-                 name: str,
-                 event_id: int,
-                 added_by: int):
-        self.id: int = guest_id
-        self.event_id: int = event_id
-        self.name: str = name
-        self.added_by = added_by
+    def __init__(self, **kwargs):
+        self.id: int = kwargs['id']
+        self.event: int = kwargs['event']
+        self.name: str = kwargs['name']
+        self.added_by = kwargs['added_by']
 
-    def change_name(self, name: str):
+    def change_name(self, name: str) -> None:
         """
         Rename the guest
         :param name: New name
@@ -206,7 +192,7 @@ class Guest:
         except psycopg2.Error as e:
             logging.error(e)
 
-    def delete(self):
+    def delete(self) -> None:
         """
         Deletes the guest
         """
@@ -232,19 +218,14 @@ class Guest:
 
 
 class Event:
-    def __init__(self,
-                 event_id: int,
-                 date: datetime.datetime,
-                 event_type: str,
-                 created_by: int,
-                 note: str):
-        self.id: int = event_id
-        self.date: datetime.datetime = date
+    def __init__(self, **kwargs):
+        self.id: int = kwargs['id']
+        self.date: datetime.datetime = kwargs['date']
         self.date_formatted: str = self.date.strftime("%d.%m.%Y")
-        self.type: str = event_type
-        self.created_by: int = created_by
+        self.type: str = kwargs['type']
+        self.created_by: int = kwargs['created_by']
         self.icon: str = ICONS[self.type]
-        self.note: str = note
+        self.note: str = kwargs['note']
 
     def players(self) -> list[Player]:
         """
@@ -276,10 +257,10 @@ class Event:
                         WHERE attendance.event = {self.id})
                         ORDER BY attendance.timestamp ASC;
                     """)
-                players_data = cursor.fetchall()
+                data = cursor.fetchall()
                 players = []
-                for player in players_data:
-                    players.append(Player(player_id=player[0],
+                for player in data:
+                    players.append(Player(id=player[0],
                                           name=player[1],
                                           lastname=player[2],
                                           telegram_id=player[3],
@@ -313,12 +294,12 @@ class Event:
                         SELECT id, name, event, added_by
                         FROM guests
                         WHERE event = '{self.id}'
-                        ORDER BY timestamp ASC
+                        ORDER BY timestamp ASC;
                     """)
-                guests_data = cursor.fetchall()
+                data = cursor.fetchall()
                 guests = []
-                for guest in guests_data:
-                    guests.append(Guest(guest_id=guest[0], name=guest[1], event_id=guest[2], added_by=guest[3]))
+                for guest in data:
+                    guests.append(Guest(id=guest[0], name=guest[1], event=guest[2], added_by=guest[3]))
             if connection:
                 connection.close()
             return guests
@@ -391,7 +372,7 @@ class Event:
         except psycopg2.Error as e:
             logging.error(e)
 
-    def delete(self):
+    def delete(self) -> None:
         """
         Deletes the event
         """
@@ -417,7 +398,7 @@ class Event:
         except psycopg2.Error as e:
             logging.error(e)
 
-    def switch_type(self):
+    def switch_type(self) -> None:
         """
         Switch the type of event, e.g. "game" -> "train" or "train" -> "game"
         """
@@ -443,7 +424,7 @@ class Event:
         self.type = new_type
         self.icon = ICONS[self.type]
 
-    def add_guest(self, guest_name: str, player: Player) -> None:  # TODO: return Guest
+    def add_guest(self, guest_name: str, player: Player) -> Guest:
         """
         Adds name to the 'guests' table
         :param guest_name: guest name
@@ -461,12 +442,22 @@ class Event:
                 cursor.execute(
                     f"""
                         INSERT INTO guests(event, name, added_by, timestamp)
-                        VALUES({self.id}, '{guest_name}', {player.id}, CURRENT_TIMESTAMP)
+                        VALUES({self.id}, '{guest_name}', {player.id}, CURRENT_TIMESTAMP);
+                        
+                        SELECT id, name, event, added_by FROM guests 
+                        WHERE event = {self.id}, name = '{guest_name}', added_by = {player.id};
                     """)
+                data = cursor.fetchall()[0]
+                guest_kwargs = dict(id=data[0],
+                                    name=data[1],
+                                    event=data[2],
+                                    added_by=data[3])
             logging.info(f"[{player.id}]{player.lastname} {player.name} added guest to [{self.id}]{self.date_formatted}: {guest_name}")
 
             if connection:
                 connection.close()
+
+            return Guest(**guest_kwargs)
 
         except psycopg2.Error as e:
             logging.error(e)
@@ -523,21 +514,21 @@ def get_player(player_id: int) -> Player:
                     SELECT id, name, lastname, telegram_id, birthdate, email, mobile, active, admin, team
                     FROM players WHERE id = '{player_id}';
                 """)
-            player = cursor.fetchall()
+            data = cursor.fetchall()[0]
 
         if connection:
             connection.close()
 
-        return Player(player_id=player[0][0],
-                      name=player[0][1],
-                      lastname=player[0][2],
-                      telegram_id=player[0][3],
-                      birthdate=player[0][4],
-                      email=player[0][5],
-                      mobile=player[0][6],
-                      active=player[0][7],
-                      admin=player[0][8],
-                      team=player[0][9])
+        return Player(id=data[0],
+                      name=data[1],
+                      lastname=data[2],
+                      telegram_id=data[3],
+                      birthdate=data[4],
+                      email=data[5],
+                      mobile=data[6],
+                      active=data[7],
+                      admin=data[8],
+                      team=data[9])
 
     except psycopg2.Error as e:
         logging.error(e)
@@ -592,17 +583,17 @@ def get_event(event_id: int) -> Event:
                     SELECT id, date, type, created_by, note 
                     FROM events WHERE id = '{event_id}';
                 """)
-            event = cursor.fetchall()
-            event_id = event[0][0]
-            event_date = event[0][1]
-            event_type = event[0][2]
-            event_created_by = event[0][3]
-            event_note = event[0][4]
+            data = cursor.fetchall()[0]
+            event_kwargs = dict(id=data[0],
+                                date=data[1],
+                                type=data[2],
+                                created_by=data[3],
+                                note=data[4])
 
         if connection:
             connection.close()
 
-        return Event(event_id, event_date, event_type, event_created_by, event_note)
+        return Event(**event_kwargs)
 
     except psycopg2.Error as e:
         logging.error(e)
@@ -612,7 +603,7 @@ def get_guest(guest_id: int) -> Guest:
     """
         Get guest by id
         :param guest_id: guest id
-        :return: Event
+        :return: Guest
         """
     try:
         connection = psycopg2.connect(
@@ -628,16 +619,16 @@ def get_guest(guest_id: int) -> Guest:
                     SELECT id, name, event, added_by 
                     FROM guests WHERE id = '{guest_id}';
                 """)
-            guest = cursor.fetchall()
-            guest_id = guest[0][0]
-            guest_name = guest[0][1]
-            guest_event_id = guest[0][2]
-            guest_added_by = guest[0][3]
+            data = cursor.fetchall()[0]
+            guest_kwargs = dict(id=data[0],
+                                name=data[1],
+                                event=data[2],
+                                added_by=data[3])
 
         if connection:
             connection.close()
 
-        return Guest(guest_id, guest_name, guest_event_id, guest_added_by)
+        return Guest(**guest_kwargs)
 
     except psycopg2.Error as e:
         logging.error(e)
@@ -669,7 +660,7 @@ def upcoming_events() -> list[Event]:
         if connection:
             connection.close()
 
-        events = [Event(event[0], event[1], event[2], event[3], event[4]) for event in events_raw]
+        events = [Event(id=event[0], date=event[1], type=event[2], created_by=event[3], note=event[4]) for event in events_raw]
 
         return events
 
@@ -706,20 +697,19 @@ def get_player_by_telegram_id(telegram_id: int) -> Player:
                             players.team
                     FROM players WHERE telegram_id = {telegram_id};
                 """)
-            player = cursor.fetchall()
-            player = player[0]
+            data = cursor.fetchall()[0]
         if connection:
             connection.close()
-        return Player(player_id=player[0],
-                      name=player[1],
-                      lastname=player[2],
-                      telegram_id=player[3],
-                      birthdate=player[4],
-                      email=player[5],
-                      mobile=player[6],
-                      active=player[7],
-                      admin=player[8],
-                      team=player[9])
+        return Player(id=data[0],
+                      name=data[1],
+                      lastname=data[2],
+                      telegram_id=data[3],
+                      birthdate=data[4],
+                      email=data[5],
+                      mobile=data[6],
+                      active=data[7],
+                      admin=data[8],
+                      team=data[9])
 
     except psycopg2.Error as e:
         logging.error(e)
@@ -753,10 +743,10 @@ def get_active_players() -> list[Player]:
                             players.team
                     FROM players WHERE active = true;
                 """)
-            players_data = cursor.fetchall()
+            data = cursor.fetchall()
             players = []
-            for player in players_data:
-                players.append(Player(player_id=player[0],
+            for player in data:
+                players.append(Player(id=player[0],
                                       name=player[1],
                                       lastname=player[2],
                                       telegram_id=player[3],
@@ -802,10 +792,10 @@ def get_all_players() -> list[Player]:
                             players.team
                     FROM players;
                 """)
-            players_data = cursor.fetchall()
+            data = cursor.fetchall()
             players = []
-            for player in players_data:
-                players.append(Player(player_id=player[0],
+            for player in data:
+                players.append(Player(id=player[0],
                                       name=player[1],
                                       lastname=player[2],
                                       telegram_id=player[3],
@@ -850,17 +840,17 @@ def create_event(event_date: str, event_type: str, created_by: int) -> Event:
                     SELECT id, date, type, created_by, note FROM events 
                     WHERE date = '{event_date}';
                 """)
-            event = cursor.fetchall()
-            event_id = event[0][0]
-            event_date = event[0][1]
-            event_type = event[0][2]
-            event_created_by = event[0][3]
-            event_note = event[0][4]
+            data = cursor.fetchall()[0]
+            event_kwargs = dict(id=data[0],
+                                date=data[1],
+                                type=data[2],
+                                created_by=data[3],
+                                note=data[4])
 
         if connection:
             connection.close()
 
-        return Event(event_id, event_date, event_type, event_created_by, event_note)
+        return Event(**event_kwargs)
 
     except psycopg2.Error as e:
         logging.error(e)

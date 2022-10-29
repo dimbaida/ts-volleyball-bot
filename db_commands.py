@@ -276,10 +276,9 @@ class Event:
                         WHERE attendance.event = {self.id})
                         ORDER BY attendance.timestamp ASC;
                     """)
-                players_data = cursor.fetchall()
-                players = []
-                for player in players_data:
-                    players.append(Player(*player))
+                data = cursor.fetchall()
+                players = [Player(*player) for player in data]
+
             if connection:
                 connection.close()
             return players
@@ -306,10 +305,9 @@ class Event:
                         WHERE event = '{self.id}'
                         ORDER BY timestamp ASC
                     """)
-                guests_data = cursor.fetchall()
-                guests = []
-                for guest in guests_data:
-                    guests.append(Guest(*guest))
+                data = cursor.fetchall()
+                guests = [Guest(*guest) for guest in data]
+
             if connection:
                 connection.close()
             return guests

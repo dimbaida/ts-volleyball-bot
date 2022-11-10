@@ -86,7 +86,7 @@ class Player:
                         ON CONFLICT (player, event) DO UPDATE
                             SET decision = {decision}, timestamp = CURRENT_TIMESTAMP;
                     """)
-            logging.info(f"[{self.id}]{self.lastname} {self.name} -> [{event.id}]{event.date_formatted} - {decision}")
+            logging.info(f"[{self.id}]{self.lastname} {self.name} > [{event.id}]{event.date_formatted} - {decision}")
 
             if connection:
                 connection.close()

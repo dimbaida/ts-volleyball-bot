@@ -2,9 +2,9 @@ import logging
 import telebot
 import config
 import inline_calendar
+import db_commands as db
 from datetime import datetime
 from common_constants import ICONS
-import db_commands as db
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s >> %(message)s')
 

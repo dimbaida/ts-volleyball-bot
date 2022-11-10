@@ -452,7 +452,7 @@ def callback_inline(call):
         keyboard.row(btn_01)
         keyboard.row(btn_02)
         event = db.create_event(date, event_type, player.id)
-        logging.info(f"[{event.id} - {event.date_formatted}] was created by [{player.id}]{player.lastname} {player.name}")
+        logging.info(f"[{event.id}]{event.date_formatted} was created by [{player.id}]{player.lastname} {player.name}")
         bot.edit_message_text(f'<code>Подію створено: {event.icon} {event.date_formatted}</code>',
                               call.message.chat.id,
                               call.message.message_id,

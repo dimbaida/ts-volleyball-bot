@@ -370,16 +370,25 @@ def callback_inline(call):
     if command == 'MANAGE>>EVENT>>DELETE':
         event = db.get_event(data)
         keyboard = telebot.types.InlineKeyboardMarkup()
-        btn_01 = telebot.types.InlineKeyboardButton('Так',
-                                                    callback_data=f'MANAGE>>EVENT>>DELETE>>CONFIRMED::{event.id}')
-        btn_02 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'MANAGE>>EVENT::{event.id}')
-        keyboard.row(btn_01, btn_02)
-        bot.edit_message_text(
-            f'<code>ВПЕВНЕНИЙ? Всі дані про подію будуть видалені! {event.icon} {event.date_formatted}</code>',
-            call.message.chat.id,
-            call.message.message_id,
-            parse_mode='HTML',
-            reply_markup=keyboard)
+        if event.date >= datetime.today():
+            btn_01 = telebot.types.InlineKeyboardButton('Так', callback_data=f'MANAGE>>EVENT>>DELETE>>CONFIRMED::{event.id}')
+            btn_02 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'MANAGE>>EVENT::{event.id}')
+            keyboard.row(btn_01, btn_02)
+            bot.edit_message_text(
+                f'<code>ВПЕВНЕНИЙ? Всі дані про подію будуть видалені! {event.icon} {event.date_formatted}</code>',
+                call.message.chat.id,
+                call.message.message_id,
+                parse_mode='HTML',
+                reply_markup=keyboard)
+        else:
+            btn = telebot.types.InlineKeyboardButton('Назад', callback_data=f'MANAGE>>EVENT::{event.id}')
+            keyboard.row(btn)
+            bot.edit_message_text(
+                f'<code>Неможна видалити подію, яка відбулася</code>',
+                call.message.chat.id,
+                call.message.message_id,
+                parse_mode='HTML',
+                reply_markup=keyboard)
 
     if command == 'MANAGE>>EVENT>>DELETE>>CONFIRMED':
         event = db.get_event(data)
@@ -389,7 +398,7 @@ def callback_inline(call):
         keyboard.row(btn_01)
         keyboard.row(btn_02)
         event.delete()
-        logging.info(f"[{event.id} - {event.date_formatted}] was deleted by [{player.id}]{player.lastname} {player.name}")
+        logging.info(f"[{event.id}] {event.date_formatted} was deleted by [{player.id}]{player.lastname} {player.name}")
         bot.edit_message_text(f'<code>Подія {event.icon} {event.date_formatted} видалена</code>',
                               call.message.chat.id,
                               call.message.message_id,

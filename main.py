@@ -3,7 +3,7 @@ import telebot
 import config
 import inline_calendar
 import db_commands as db
-from datetime import datetime
+import datetime
 from common_constants import ICONS
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s >> %(message)s')
@@ -370,7 +370,7 @@ def callback_inline(call):
     if command == 'MANAGE>>EVENT>>DELETE':
         event = db.get_event(data)
         keyboard = telebot.types.InlineKeyboardMarkup()
-        if event.date >= datetime.today():
+        if event.date >= datetime.date.today():
             btn_01 = telebot.types.InlineKeyboardButton('Так', callback_data=f'MANAGE>>EVENT>>DELETE>>CONFIRMED::{event.id}')
             btn_02 = telebot.types.InlineKeyboardButton('Назад', callback_data=f'MANAGE>>EVENT::{event.id}')
             keyboard.row(btn_01, btn_02)
@@ -431,7 +431,7 @@ def callback_inline(call):
     if command == 'MANAGE>>CREATE>>MONTH>>DAY>>DATE':
         date = data
         year, month, day = date.split('-')
-        if day.isdigit() and datetime.strptime(date, '%Y-%m-%d') >= datetime.today():
+        if day.isdigit() and datetime.datetime.strptime(date, '%Y-%m-%d') >= datetime.datetime.today():
             keyboard = telebot.types.InlineKeyboardMarkup()
             btn_01 = telebot.types.InlineKeyboardButton('Тренування', callback_data=f'MANAGE>>CREATE>>MONTH>>DAY>>DATE>>CREATE::{date}:train')
             btn_02 = telebot.types.InlineKeyboardButton('Гра', callback_data=f'MANAGE>>CREATE>>MONTH>>DAY>>DATE>>CREATE::{date}:game')

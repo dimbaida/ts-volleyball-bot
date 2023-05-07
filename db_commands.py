@@ -4,7 +4,7 @@ import datetime
 from common_constants import ICONS
 from config import host, user, password, database
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s >> %(message)s')
+logging.basicConfig(filename='.log', level=logging.INFO, format='%(levelname)s >> %(message)s')
 
 
 class Player:

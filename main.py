@@ -6,7 +6,10 @@ import db_commands as db
 import datetime
 from common_constants import ICONS
 
-logging.basicConfig(filename='.log', level=logging.INFO, format='%(levelname)s >> %(message)s')
+logging.basicConfig(filename='.log',
+                    level=logging.INFO,
+                    format='%(asctime)s :: %(levelname)s >> %(message)s',
+                    datefmt='%d-%m-%Y %H:%M:%S')
 
 bot = telebot.TeleBot(config.bot_token)
 

@@ -1,4 +1,8 @@
 import os
+import dotenv
+
+# Load environment variables from .env file
+dotenv.load_dotenv()
 
 host = os.getenv('DB_HOST')
 user = os.getenv('DB_USER')

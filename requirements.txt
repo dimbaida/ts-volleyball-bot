@@ -1,5 +1,5 @@
 asyncio==3.4.3
-certifi==2021.5.30
+certifi==2021.5.30f
 charset-normalizer==2.0.6
 idna==3.2
 keyboa==3.0.1
@@ -10,3 +10,4 @@ python-telegram-bot-calendar==1.0.5
 requests==2.26.0
 six==1.16.0
 urllib3==1.26.7
+python-dotenv~=1.0.0

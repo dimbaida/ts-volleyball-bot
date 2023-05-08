@@ -1,8 +1,7 @@
 import logging
 import psycopg2
 import datetime
-from common_constants import ICONS
-from config import host, user, password, database
+from common_constants import ICONS, DB, DB_HOST, DB_USER, DB_PASSWORD
 
 logging.basicConfig(filename='.log',
                     level=logging.INFO,
@@ -41,10 +40,10 @@ class Player:
         """
         try:
             connection = psycopg2.connect(
-                host=host,
-                user=user,
-                password=password,
-                database=database)
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB)
             connection.autocommit = True
 
             with connection.cursor() as cursor:
@@ -75,10 +74,10 @@ class Player:
         event = get_event(event_id)
         try:
             connection = psycopg2.connect(
-                host=host,
-                user=user,
-                password=password,
-                database=database)
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB)
             connection.autocommit = True
 
             with connection.cursor() as cursor:
@@ -104,10 +103,10 @@ class Player:
         """
         try:
             connection = psycopg2.connect(
-                host=host,
-                user=user,
-                password=password,
-                database=database)
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB)
             connection.autocommit = True
 
             with connection.cursor() as cursor:
@@ -128,10 +127,10 @@ class Player:
         """
         try:
             connection = psycopg2.connect(
-                host=host,
-                user=user,
-                password=password,
-                database=database)
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB)
             connection.autocommit = True
 
             with connection.cursor() as cursor:
@@ -154,10 +153,10 @@ class Player:
         """
         try:
             connection = psycopg2.connect(
-                host=host,
-                user=user,
-                password=password,
-                database=database)
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB)
             connection.autocommit = True
 
             with connection.cursor() as cursor:
@@ -192,10 +191,10 @@ class Guest:
         """
         try:
             connection = psycopg2.connect(
-                host=host,
-                user=user,
-                password=password,
-                database=database)
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB)
             connection.autocommit = True
 
             with connection.cursor() as cursor:
@@ -215,10 +214,10 @@ class Guest:
         """
         try:
             connection = psycopg2.connect(
-                host=host,
-                user=user,
-                password=password,
-                database=database)
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB)
             connection.autocommit = True
 
             with connection.cursor() as cursor:
@@ -256,10 +255,10 @@ class Event:
         """
         try:
             connection = psycopg2.connect(
-                host=host,
-                user=user,
-                password=password,
-                database=database)
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB)
             connection.autocommit = True
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -295,10 +294,10 @@ class Event:
         """
         try:
             connection = psycopg2.connect(
-                host=host,
-                user=user,
-                password=password,
-                database=database)
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB)
             connection.autocommit = True
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -324,10 +323,10 @@ class Event:
         """
         try:
             connection = psycopg2.connect(
-                host=host,
-                user=user,
-                password=password,
-                database=database)
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB)
             connection.autocommit = True
 
             with connection.cursor() as cursor:
@@ -389,10 +388,10 @@ class Event:
         """
         try:
             connection = psycopg2.connect(
-                host=host,
-                user=user,
-                password=password,
-                database=database)
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB)
             connection.autocommit = True
 
             with connection.cursor() as cursor:
@@ -416,10 +415,10 @@ class Event:
         new_type = {'train': 'game', 'game': 'train'}[self.type]
         try:
             connection = psycopg2.connect(
-                host=host,
-                user=user,
-                password=password,
-                database=database)
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB)
             connection.autocommit = True
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -443,10 +442,10 @@ class Event:
         """
         try:
             connection = psycopg2.connect(
-                host=host,
-                user=user,
-                password=password,
-                database=database)
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB)
             connection.autocommit = True
 
             with connection.cursor() as cursor:
@@ -477,10 +476,10 @@ class Event:
         """
         try:
             connection = psycopg2.connect(
-                host=host,
-                user=user,
-                password=password,
-                database=database)
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB)
             connection.autocommit = True
 
             with connection.cursor() as cursor:
@@ -508,10 +507,10 @@ def get_player(player_id: int) -> Player:
     """
     try:
         connection = psycopg2.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=database)
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB)
         connection.autocommit = True
 
         with connection.cursor() as cursor:
@@ -539,10 +538,10 @@ def check_player(telegram_id: int) -> bool:
     """
     try:
         connection = psycopg2.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=database)
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB)
         connection.autocommit = True
 
         with connection.cursor() as cursor:
@@ -568,10 +567,10 @@ def get_event(event_id: int) -> Event:
     """
     try:
         connection = psycopg2.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=database)
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB)
         connection.autocommit = True
 
         with connection.cursor() as cursor:
@@ -599,10 +598,10 @@ def get_guest(guest_id: int) -> Guest:
         """
     try:
         connection = psycopg2.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=database)
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB)
         connection.autocommit = True
 
         with connection.cursor() as cursor:
@@ -629,10 +628,10 @@ def upcoming_events() -> list[Event]:
     """
     try:
         connection = psycopg2.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=database)
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB)
         connection.autocommit = True
 
         with connection.cursor() as cursor:
@@ -664,10 +663,10 @@ def get_player_by_telegram_id(telegram_id: int) -> Player:
     """
     try:
         connection = psycopg2.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=database)
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB)
         connection.autocommit = True
 
         with connection.cursor() as cursor:
@@ -701,10 +700,10 @@ def get_active_players() -> list[Player]:
     """
     try:
         connection = psycopg2.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=database)
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB)
         connection.autocommit = True
 
         with connection.cursor() as cursor:
@@ -740,10 +739,10 @@ def get_all_players() -> list[Player]:
     """
     try:
         connection = psycopg2.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=database)
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB)
         connection.autocommit = True
 
         with connection.cursor() as cursor:
@@ -782,10 +781,10 @@ def create_event(event_date: str, event_type: str, created_by: int) -> Event:
     """
     try:
         connection = psycopg2.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=database)
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB)
         connection.autocommit = True
 
         with connection.cursor() as cursor:

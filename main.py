@@ -1,26 +1,25 @@
 import logging
 import telebot
-import config
 import inline_calendar
 import db_commands as db
 import datetime
-from common_constants import ICONS
+from common_constants import *
 
 logging.basicConfig(filename='.log',
                     level=logging.INFO,
                     format='%(asctime)s :: %(levelname)s >> %(message)s',
                     datefmt='%d-%m-%Y %H:%M:%S')
 
-bot = telebot.TeleBot(config.bot_token)
+bot = telebot.TeleBot(BOT_TOKEN)
 
 
 @bot.message_handler(commands=['test'], chat_types=['private'])
 def test(message):
     """
     Bot command for test purposes. Only available for the developers, telegram ids hardcoded
-    If you're a collaborator, add your telegram id into 'developers' var in 'config.py'
+    If you're a collaborator, add your telegram id into 'developers' var in 'common_constants.py'
     """
-    if message.from_user.id == int(config.master_telegram_id):
+    if message.from_user.id == int(MASTER_TG_ID):
         pass
 
 
@@ -112,7 +111,7 @@ def text(message):
                                  f"<code>Гостьовий гравець — {guest_name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
                                  parse_mode='HTML',
                                  reply_markup=keyboard)
-                bot.send_message(config.telegram_group_id,
+                bot.send_message(TS_GROUP_ID,
                                  f"<code>{player.lastname} {player.name} додав гостя {guest_name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
                                  parse_mode='HTML')
                 player.purge_cache()
@@ -194,7 +193,7 @@ def callback_inline(call):
             att = player.check_attendance(event.id)
             if att is False or att is None:
                 player.set_decision(event.id, True)
-                bot.send_message(config.telegram_group_id,
+                bot.send_message(TS_GROUP_ID,
                                  f"<code>{player.lastname} {player.name} {ICONS['right_arrow']} {event.icon} {event.date_formatted} {ICONS['yes']}</code>",
                                  parse_mode='HTML',
                                  disable_notification=True)
@@ -203,7 +202,7 @@ def callback_inline(call):
             att = player.check_attendance(event.id)
             if att is True or att is None:
                 player.set_decision(event.id, False)
-                bot.send_message(config.telegram_group_id,
+                bot.send_message(TS_GROUP_ID,
                                  f"<code>{player.lastname} {player.name} {ICONS['right_arrow']} {event.icon} {event.date_formatted} {ICONS['no']}</code>",
                                  parse_mode='HTML',
                                  disable_notification=True)
@@ -291,7 +290,7 @@ def callback_inline(call):
                 call.message.message_id,
                 parse_mode='HTML',
                 reply_markup=keyboard)
-            bot.send_message(config.telegram_group_id,
+            bot.send_message(TS_GROUP_ID,
                              f"<code>{player.lastname} {player.name} видалив гостя {name} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
                              parse_mode='HTML')
         else:
@@ -357,7 +356,7 @@ def callback_inline(call):
                               call.message.message_id,
                               parse_mode='HTML',
                               reply_markup=keyboard)
-        bot.send_message(config.telegram_group_id,
+        bot.send_message(TS_GROUP_ID,
                          f"<code>{player.name} {player.lastname} змінив {old_icon} {ICONS['right_arrow']} {event.icon} {event.date_formatted}</code>",
                          parse_mode='HTML')
 
@@ -470,7 +469,7 @@ def callback_inline(call):
                               call.message.message_id,
                               parse_mode='HTML',
                               reply_markup=keyboard)
-        bot.send_message(config.telegram_group_id,
+        bot.send_message(TS_GROUP_ID,
                          f"<code>{player.lastname} {player.name} створив {event.icon} {event.date_formatted}</code>",
                          parse_mode='HTML')
 

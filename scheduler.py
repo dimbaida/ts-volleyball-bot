@@ -1,8 +1,7 @@
 import logging
 import telebot
-import config
 import datetime
-from common_constants import ICONS
+from common_constants import ICONS, BOT_TOKEN, TS_GROUP_ID
 import db_commands as db
 
 logging.basicConfig(filename='.log',
@@ -15,6 +14,7 @@ def send_event_reminder() -> None:
     """
     Sends the reminder to players who didn't yet make any decision on the nearest upcoming event
     """
+    logging.info(f'Starting events reminder')
     events = db.upcoming_events()
     if events:
         event = events[0]
@@ -22,7 +22,7 @@ def send_event_reminder() -> None:
         btn_01 = telebot.types.InlineKeyboardButton('ТАК', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:yes')
         btn_02 = telebot.types.InlineKeyboardButton('НІ', callback_data=f'LIST_EVENTS>>EVENT::{event.id}:no')
         keyboard.row(btn_01, btn_02)
-        bot = telebot.TeleBot(config.bot_token)
+        bot = telebot.TeleBot(BOT_TOKEN)
         for player in db.get_active_players():
             if player.check_attendance(event.id) is None:
                 event_text = f"Нагадування: {event.icon} {event.date_formatted}"
@@ -37,18 +37,21 @@ def send_event_reminder() -> None:
                                          parse_mode='HTML')
                     except telebot.apihelper.ApiTelegramException as e:
                         logging.error(f'Failed to send message to [{player.id}]{player.lastname} {player.name}: {e}')
+    logging.info(f'Finishing events reminder')
 
 
 def send_birthday_reminder() -> None:
     """
     Sends the reminder to the group about players who have birthday today
     """
+    logging.info(f'Starting birthday reminder')
     players = db.get_all_players()
     today = datetime.datetime.now()
-    bot = telebot.TeleBot(config.bot_token)
+    bot = telebot.TeleBot(BOT_TOKEN)
     for player in players:
         if player.birthdate.month == today.month and player.birthdate.day == today.day:
             logging.info(f"[{player.id}]{player.lastname} {player.name} birthday")
-            bot.send_message(config.telegram_group_id,
+            bot.send_message(TS_GROUP_ID,
                              f"<code>{player.name} {player.lastname} сьогодні святкує свій день народження! {ICONS['party']}</code>",
                              parse_mode='HTML')
+    logging.info(f'Finishing birthday reminder')

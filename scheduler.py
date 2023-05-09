@@ -1,7 +1,7 @@
 import logging
 import telebot
 import datetime
-from common_constants import ICONS, BOT_TOKEN, TS_GROUP_ID
+from common_constants import ICONS, BOT_TOKEN, TS_GROUP_ID, MASTER_TG_ID
 import db_commands as db
 
 logging.basicConfig(filename='.log',
@@ -55,3 +55,11 @@ def send_birthday_reminder() -> None:
                              f"<code>{player.name} {player.lastname} сьогодні святкує свій день народження! {ICONS['party']}</code>",
                              parse_mode='HTML')
     logging.info(f'Finishing birthday reminder')
+
+
+def test():
+    logging.info(f'scheduler test')
+    bot = telebot.TeleBot(BOT_TOKEN)
+    bot.send_message(MASTER_TG_ID,
+                     f"<code>ts/test</code>",
+                     parse_mode='HTML')

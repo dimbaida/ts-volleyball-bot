@@ -5,7 +5,7 @@ import db_commands as db
 import datetime
 from common_constants import *
 
-logging.basicConfig(filename='.log',
+logging.basicConfig(filename=LOGFILE,
                     level=logging.INFO,
                     format='%(asctime)s :: %(levelname)s >> %(message)s',
                     datefmt='%d-%m-%Y %H:%M:%S')
@@ -20,12 +20,12 @@ def test(message):
     If you're a collaborator, add your telegram id into 'developers' var in 'common_constants.py'
     """
     if message.from_user.id == int(MASTER_TG_ID):
-        pass
+        logging.info(f"[{message.from_user.id} > '/test'")
 
 
 @bot.message_handler(commands=['get_id'], chat_types=['private'])
 def get_id(message):
-    logging.info(f'id request from {message.from_user.id}')
+    logging.info(f"[{message.from_user.id}] > '/get_id'")
     bot.send_message(message.from_user.id,
                      f'<code>твій telegram ID: {message.from_user.id}</code>',
                      reply_markup=telebot.types.ReplyKeyboardRemove(),

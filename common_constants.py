@@ -12,6 +12,7 @@ DB_PORT = os.getenv('DB_PORT')
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 TS_GROUP_ID = os.getenv('TS_GROUP_ID')
 MASTER_TG_ID = os.getenv('MASTER_TG_ID')
+LOGFILE = os.getenv('LOGFILE')
 
 ICONS = {
     'train': '\U0001F3D0',

@@ -1,9 +1,9 @@
 import logging
 import psycopg2
 import datetime
-from common_constants import ICONS, DB, DB_HOST, DB_USER, DB_PASSWORD
+from common_constants import *
 
-logging.basicConfig(filename='.log',
+logging.basicConfig(filename=LOGFILE,
                     level=logging.INFO,
                     format='%(asctime)s :: %(levelname)s >> %(message)s',
                     datefmt='%d-%m-%Y %H:%M:%S')

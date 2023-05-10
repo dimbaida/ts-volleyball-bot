@@ -1,10 +1,10 @@
 import logging
 import telebot
 import datetime
-from common_constants import ICONS, BOT_TOKEN, TS_GROUP_ID, MASTER_TG_ID
+from common_constants import *
 import db_commands as db
 
-logging.basicConfig(filename='.log',
+logging.basicConfig(filename=LOGFILE,
                     level=logging.INFO,
                     format='%(asctime)s :: %(levelname)s >> %(message)s',
                     datefmt='%d-%m-%Y %H:%M:%S')

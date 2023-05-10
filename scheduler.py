@@ -56,10 +56,3 @@ def send_birthday_reminder() -> None:
                              parse_mode='HTML')
     logging.info(f'Finishing birthday reminder')
 
-
-def test():
-    logging.info(f'scheduler test')
-    bot = telebot.TeleBot(BOT_TOKEN)
-    bot.send_message(MASTER_TG_ID,
-                     f"<code>ts/test</code>",
-                     parse_mode='HTML')

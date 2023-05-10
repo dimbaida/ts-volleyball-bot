@@ -20,7 +20,7 @@ def test(message):
     If you're a collaborator, add your telegram id into 'developers' var in 'common_constants.py'
     """
     if message.from_user.id == int(MASTER_TG_ID):
-        logging.info(f"[{message.from_user.id} > '/test'")
+        logging.info(f"[{message.from_user.id}] > '/test'")
 
 
 @bot.message_handler(commands=['get_id'], chat_types=['private'])

@@ -1,3 +1,0 @@
-import scheduler
-
-scheduler.test()

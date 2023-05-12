@@ -19,13 +19,14 @@ def test(message):
     Bot command for test purposes. Only available for the developers, telegram ids hardcoded
     If you're a collaborator, add your telegram id into 'developers' var in 'common_constants.py'
     """
+    logging.info(f"[{message.from_user.id}] > '/test'")
     if message.from_user.id == int(MASTER_TG_ID):
-        logging.info(f"[{message.from_user.id}] > '/test'")
+        pass
 
 
 @bot.message_handler(commands=['get_id'], chat_types=['private'])
 def get_id(message):
-    logging.info(f"[{message.from_user.id}] > '/get_id'")
+    logging.info(f"[{message.from_user.id}] unknown user > '/get_id'")
     bot.send_message(message.from_user.id,
                      f'<code>твій telegram ID: {message.from_user.id}</code>',
                      reply_markup=telebot.types.ReplyKeyboardRemove(),
@@ -37,7 +38,7 @@ def get_id(message):
 def start(message):
     if db.check_player(message.from_user.id):
         player = db.get_player_by_telegram_id(message.from_user.id)
-        logging.info(f"[{player.id}]{player.lastname} {player.name} > '/start'")
+        logging.info(f"[{player.id}] {player.lastname} {player.name} > '/start'")
         keyboard = telebot.types.InlineKeyboardMarkup()
         for event in db.upcoming_events():
             btn = telebot.types.InlineKeyboardButton(f"{event.icon}  {event.date_formatted}",
@@ -51,7 +52,7 @@ def start(message):
                          reply_markup=keyboard)
 
     else:
-        logging.warning(f"[{message.from_user.id}] unknown user '/start'")
+        logging.warning(f"[{message.from_user.id}] unknown user > '/start'")
         bot.send_message(message.from_user.id,
                          '<code>Тебе немає в списку гравців. Напиши адміністратору:</code> @dimbaida.',
                          parse_mode='HTML',
@@ -62,8 +63,8 @@ def start(message):
 def manage(message):
     if db.check_player(message.from_user.id):
         player = db.get_player_by_telegram_id(message.from_user.id)
+        logging.info(f"[{player.id}] {player.lastname} {player.name} > '/manage'")
         if player.admin:
-            logging.info(f"[{player.id}]{player.lastname} {player.name} > '/manage'")
             keyboard = telebot.types.InlineKeyboardMarkup()
             for event in db.upcoming_events():
                 btn = telebot.types.InlineKeyboardButton(f"Змінити {event.icon} {event.date_formatted}",
@@ -79,14 +80,13 @@ def manage(message):
                              reply_markup=keyboard)
 
         else:
-            logging.warning(f"[{player.id}]{player.lastname} {player.name} '/manage' - not an admin!")
             bot.send_message(message.from_user.id,
                              '<code>Ця секція доступна тільки користувачам з правами адміністратора.</code>',
                              parse_mode='HTML',
                              disable_notification=True)
 
     else:
-        logging.warning(f"[{message.from_user.id}] unknown user '/manage'")
+        logging.warning(f"[{message.from_user.id}] unknown user > '/manage'")
         bot.send_message(message.from_user.id,
                          '<code>Тебе немає в списку гравців. Напиши адміністратору:</code> @dimbaida.',
                          parse_mode='HTML',
@@ -97,6 +97,7 @@ def manage(message):
 def text(message):
     if db.check_player(message.from_user.id):
         player = db.get_player_by_telegram_id(message.from_user.id)
+        logging.info(f"[{player.id}] {player.lastname} {player.name} > '{message.text}'")
         cache = player.read_cache()
         if cache:
             menu_state, data = cache.split('::')
@@ -142,7 +143,7 @@ def text(message):
                                  reply_markup=keyboard)
                 player.purge_cache()
     else:
-        print(f'[Error] Request from [{message.from_user.id}] — unknown player')
+        logging.warning(f"[{message.from_user.id}] unknown user > '{message.text}'")
         bot.send_message(message.from_user.id,
                          '<code>Тебе немає в списку гравців. Напиши адміністратору:</code> @dimbaida.',
                          parse_mode='HTML',

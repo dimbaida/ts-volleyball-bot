@@ -154,7 +154,7 @@ def text(message):
 def callback_inline(call):
     player = db.get_player_by_telegram_id(call.message.chat.id)
     player.purge_cache()
-    logging.info(f'[{player.id}]{player.lastname} {player.name} > {call.data}')
+    logging.info(f'[{player.id}] {player.lastname} {player.name} > {call.data}')
     command, data = call.data.split('::')
 
     # COMMON SECTION

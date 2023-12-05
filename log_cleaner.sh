@@ -1,4 +1,4 @@
-file="bot.log"
+file=".log"
 line_count=$(wc -l < "$file")
 threshold=1000
 
